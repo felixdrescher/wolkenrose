@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Default CSS Theme Variables (overridden dynamically by App theme controller) */
+    --bg-primary: #0B0E0C;
+    --bg-secondary: #121614;
+    --bg-tertiary: #0E1210;
+    --text-primary: #F4F1EA;
+    --text-secondary: #9CA39E;
+    --accent-primary: #D4A359;
+    --accent-secondary: #7A9A82;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --surface-subtle: rgba(255, 255, 255, 0.05);
+    --header-bg: rgba(11, 14, 12, 0.85);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: var(--font-serif);
+  }
+
+  .font-telemetry {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
