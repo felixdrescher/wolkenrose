@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Agent files
+.agent/
+
 # Build output
 dist/
 
