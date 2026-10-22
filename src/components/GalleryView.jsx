@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   MapPin,
@@ -8,8 +8,16 @@ import {
   Maximize2
 } from 'lucide-react';
 
+function formatOpticalSummary(exif) {
+  if (!exif) return '';
+  return [exif.focalLength, exif.aperture, exif.shutterSpeed]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 export default function GalleryView({
   photos,
+  categories: managedCategories = [],
   onSelectPhoto
 }) {
   const [selectedCategory, setSelectedCategory] = useState('Alle');
@@ -18,19 +26,18 @@ export default function GalleryView({
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'cinematic'
 
   const categories = useMemo(() => {
-    const set = new Set([
-      'Alpen & Gletscher',
-      'Wälder & Moore',
-      'Nachthimmel & Polarlicht',
-      'Wildtiere',
-      'Küsten & Meere',
-      'Wolken & Strukturen'
-    ]);
+    const set = new Set(managedCategories);
     photos.forEach((p) => {
       if (p.category) set.add(p.category);
     });
     return ['Alle', ...Array.from(set)];
-  }, [photos]);
+  }, [managedCategories, photos]);
+
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory('Alle');
+    }
+  }, [categories, selectedCategory]);
 
   const filteredPhotos = useMemo(() => {
     return photos
@@ -192,124 +199,165 @@ export default function GalleryView({
       ) : viewMode === 'grid' ? (
         /* Grid Layout */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {filteredPhotos.map((photo) => (
-            <article
-              key={photo.id}
-              onClick={() => onSelectPhoto(photo)}
-              className="group rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all duration-500 cursor-pointer flex flex-col shadow-sm"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-black">
-                <img
-                  src={photo.imageUrl}
-                  alt={photo.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 opacity-75 group-hover:opacity-55 transition-opacity" />
+          {filteredPhotos.map((photo) => {
+            const opticalStr = formatOpticalSummary(photo.exif);
+            const showExifBar = Boolean(photo.exif?.camera || opticalStr);
 
-                <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-[11px] font-telemetry bg-black/65 backdrop-blur-md text-white border border-white/10">
-                    {photo.category}
-                  </span>
-                  {photo.featured && (
-                    <span
-                      style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
-                      className="px-2.5 py-1 rounded-full text-[10px] font-telemetry uppercase font-semibold"
-                    >
-                      Highlight
-                    </span>
+            return (
+              <article
+                key={photo.id}
+                onClick={() => onSelectPhoto(photo)}
+                className="group rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all duration-500 cursor-pointer flex flex-col shadow-sm"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-black">
+                  <img
+                    src={photo.imageUrl}
+                    alt={photo.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 opacity-75 group-hover:opacity-55 transition-opacity" />
+
+                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                    {photo.category ? (
+                      <span className="px-3 py-1 rounded-full text-[11px] font-telemetry bg-black/65 backdrop-blur-md text-white border border-white/10">
+                        {photo.category}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+                    {photo.featured && (
+                      <span
+                        style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                        className="px-2.5 py-1 rounded-full text-[10px] font-telemetry uppercase font-semibold"
+                      >
+                        Highlight
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Bottom EXIF Strip (optional) */}
+                  {showExifBar && (
+                    <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-telemetry text-white/95 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
+                      <span className="truncate max-w-[48%]">{photo.exif?.camera || ''}</span>
+                      {opticalStr && (
+                        <span className="text-[var(--accent-primary)] shrink-0">
+                          {opticalStr}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                {/* Bottom EXIF Strip */}
-                <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-telemetry text-white/95 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-                  <span className="truncate max-w-[45%]">{photo.exif?.camera}</span>
-                  <span className="text-[var(--accent-primary)]">
-                    {photo.exif?.focalLength} · {photo.exif?.aperture} · {photo.exif?.shutterSpeed}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                <div>
-                  <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
-                      {photo.location}
-                    </span>
-                    <span className="font-telemetry text-[11px]">{photo.dateTaken}</span>
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                  <div>
+                    {(photo.location || photo.dateTaken) && (
+                      <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-1">
+                        {photo.location ? (
+                          <span className="flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                            {photo.location}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {photo.dateTaken && (
+                          <span className="font-telemetry text-[11px]">{photo.dateTaken}</span>
+                        )}
+                      </div>
+                    )}
+                    <h2 className="font-editorial text-2xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                      {photo.title}
+                    </h2>
                   </div>
-                  <h2 className="font-editorial text-2xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                    {photo.title}
-                  </h2>
+                  {photo.story && (
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                      {photo.story}
+                    </p>
+                  )}
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-                  {photo.story}
-                </p>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       ) : (
         /* Cinematic Large Plates Layout */
         <div className="space-y-12">
-          {filteredPhotos.map((photo, index) => (
-            <article
-              key={photo.id}
-              onClick={() => onSelectPhoto(photo)}
-              className="group rounded-3xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all cursor-pointer grid grid-cols-1 lg:grid-cols-12 shadow-sm"
-            >
-              <div className="lg:col-span-8 relative aspect-[16/10] bg-black overflow-hidden">
-                <img
-                  src={photo.imageUrl}
-                  alt={photo.title}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-[var(--accent-primary)] border border-white/10">
-                  Werk #{String(index + 1).padStart(2, '0')} · {photo.category}
-                </span>
-              </div>
+          {filteredPhotos.map((photo, index) => {
+            const opticalStr = formatOpticalSummary(photo.exif);
+            const showExifBoxes = Boolean(photo.exif?.camera || opticalStr);
 
-              <div className="lg:col-span-4 p-7 sm:p-9 flex flex-col justify-between space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs font-telemetry text-[var(--text-secondary)]">
-                    <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
-                      <MapPin className="w-3.5 h-3.5" />
-                      {photo.location}
-                    </span>
-                    <span>{photo.dateTaken}</span>
-                  </div>
-                  <h2 className="font-editorial text-3xl sm:text-4xl text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                    {photo.title}
-                  </h2>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                    {photo.story}
-                  </p>
+            return (
+              <article
+                key={photo.id}
+                onClick={() => onSelectPhoto(photo)}
+                className="group rounded-3xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all cursor-pointer grid grid-cols-1 lg:grid-cols-12 shadow-sm"
+              >
+                <div className="lg:col-span-8 relative aspect-[16/10] bg-black overflow-hidden">
+                  <img
+                    src={photo.imageUrl}
+                    alt={photo.title}
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                  />
+                  <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-[var(--accent-primary)] border border-white/10">
+                    Werk #{String(index + 1).padStart(2, '0')}
+                    {photo.category ? ` · ${photo.category}` : ''}
+                  </span>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-[var(--border-color)]">
-                  <div className="grid grid-cols-2 gap-2 font-telemetry text-xs">
-                    <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
-                      <span className="block text-[10px] text-[var(--text-secondary)]">KAMERA</span>
-                      <span className="text-[var(--text-primary)]">{photo.exif?.camera}</span>
-                    </div>
-                    <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
-                      <span className="block text-[10px] text-[var(--text-secondary)]">EINSTELLUNG</span>
-                      <span className="text-[var(--accent-primary)]">
-                        {photo.exif?.focalLength} {photo.exif?.aperture} {photo.exif?.shutterSpeed}
+                <div className="lg:col-span-4 p-7 sm:p-9 flex flex-col justify-between space-y-6">
+                  <div className="space-y-4">
+                    {(photo.location || photo.dateTaken) && (
+                      <div className="flex items-center justify-between text-xs font-telemetry text-[var(--text-secondary)]">
+                        {photo.location ? (
+                          <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
+                            <MapPin className="w-3.5 h-3.5" />
+                            {photo.location}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {photo.dateTaken && <span>{photo.dateTaken}</span>}
+                      </div>
+                    )}
+                    <h2 className="font-editorial text-3xl sm:text-4xl text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                      {photo.title}
+                    </h2>
+                    {photo.story && (
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        {photo.story}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-[var(--border-color)]">
+                    {showExifBoxes && (
+                      <div className="grid grid-cols-2 gap-2 font-telemetry text-xs">
+                        {photo.exif?.camera && (
+                          <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
+                            <span className="block text-[10px] text-[var(--text-secondary)]">KAMERA</span>
+                            <span className="text-[var(--text-primary)]">{photo.exif.camera}</span>
+                          </div>
+                        )}
+                        {opticalStr && (
+                          <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
+                            <span className="block text-[10px] text-[var(--text-secondary)]">EINSTELLUNG</span>
+                            <span className="text-[var(--accent-primary)]">{opticalStr}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-end">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-primary)]">
+                        <Maximize2 className="w-3.5 h-3.5" /> Großansicht öffnen
                       </span>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-end">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-primary)]">
-                      <Maximize2 className="w-3.5 h-3.5" /> Großansicht öffnen
-                    </span>
-                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

@@ -23,8 +23,12 @@ import {
   Moon,
   RotateCcw,
   User,
-  LayoutGrid
+  LayoutGrid,
+  Tags,
+  Check,
+  X
 } from 'lucide-react';
+import { extractImageMetadata } from '../utils/exifExtractor';
 
 const CAMERA_PRESETS = [
   {
@@ -172,9 +176,33 @@ const THEME_PRESETS = [
   }
 ];
 
+function createEmptyPhotoForm(defaultCategory = '') {
+  return {
+    title: '',
+    category: defaultCategory,
+    location: '',
+    coordinates: '',
+    dateTaken: '',
+    featured: true,
+    landingSelected: false,
+    imageUrl: '',
+    story: '',
+    exif: {
+      camera: '',
+      lens: '',
+      focalLength: '',
+      aperture: '',
+      shutterSpeed: '',
+      iso: ''
+    }
+  };
+}
+
 export default function StudioView({
   initialSubTab = 'upload-photo',
   photos,
+  categories = [],
+  blogCategories = [],
   posts,
   profile,
   editingPost,
@@ -184,6 +212,12 @@ export default function StudioView({
   onUpdatePhoto,
   onUpdateLandingSelection,
   onDeletePhoto,
+  onCreateCategory,
+  onRenameCategory,
+  onDeleteCategory,
+  onCreateBlogCategory,
+  onRenameBlogCategory,
+  onDeleteBlogCategory,
   onCreatePost,
   onUpdatePost,
   onDeletePost,
@@ -198,6 +232,7 @@ export default function StudioView({
   const [subTab, setSubTab] = useState(initialSubTab);
   const [bannerMessage, setBannerMessage] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [exifStatusMessage, setExifStatusMessage] = useState(null);
 
   useEffect(() => {
     if (initialSubTab) {
@@ -205,28 +240,31 @@ export default function StudioView({
     }
   }, [initialSubTab]);
 
-  // --- PHOTO UPLOAD FORM STATE ---
+  // --- CATEGORY MANAGER STATE (GALLERY & BLOG) ---
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [editingCategoryOldName, setEditingCategoryOldName] = useState(null);
+  const [editingCategoryNewName, setEditingCategoryNewName] = useState('');
+
+  const [newBlogCategoryName, setNewBlogCategoryName] = useState('');
+  const [editingBlogCategoryOldName, setEditingBlogCategoryOldName] = useState(null);
+  const [editingBlogCategoryNewName, setEditingBlogCategoryNewName] = useState('');
+
+  // --- PHOTO UPLOAD FORM STATE (all metadata fields optional & empty by default) ---
   const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
-  const [photoForm, setPhotoForm] = useState({
-    title: '',
-    category: 'Alpen & Gletscher',
-    location: '',
-    coordinates: '47.4917° N, 11.0955° O',
-    dateTaken: new Date().toISOString().split('T')[0],
-    featured: true,
-    landingSelected: false,
-    imageUrl: '',
-    story: '',
-    exif: {
-      camera: 'Hasselblad X2D 100C',
-      lens: 'XCD 2,5/55V',
-      focalLength: '55mm',
-      aperture: 'f/8',
-      shutterSpeed: '1/125s',
-      iso: '64'
+  const [photoForm, setPhotoForm] = useState(() =>
+    createEmptyPhotoForm(categories[0] || '')
+  );
+
+  // Keep category selection valid if categories list changes (default to no category if deleted)
+  useEffect(() => {
+    if (photoForm.category && !categories.includes(photoForm.category)) {
+      setPhotoForm((prev) => ({
+        ...prev,
+        category: ''
+      }));
     }
-  });
+  }, [categories]);
 
   // --- BLOG COMPOSER STATE ---
   const coverFileInputRef = useRef(null);
@@ -237,12 +275,12 @@ export default function StudioView({
     id: null,
     title: '',
     subtitle: '',
-    category: 'Reisetagebuch',
-    location: 'Alpenraum & Voralpenland',
+    category: blogCategories[0] || '',
+    location: '',
     publishedAt: new Date().toISOString().split('T')[0],
     featured: true,
     coverImage: '',
-    tags: 'Wolkenrose, Naturfotografie, Lichtstimmung',
+    tags: 'Wolkenrose, Naturfotografie',
     blocks: [
       {
         id: `block-${Date.now()}-1`,
@@ -254,12 +292,22 @@ export default function StudioView({
         type: 'image',
         imageUrl: '',
         caption: '',
-        exifNote: 'Hasselblad X2D 100C · 55mm · f/8'
+        exifNote: ''
       }
     ]
   });
 
   const [postForm, setPostForm] = useState(createDefaultPostForm);
+
+  // Keep blog post category valid if blogCategories list changes (default to no category if deleted)
+  useEffect(() => {
+    if (postForm.category && !blogCategories.includes(postForm.category)) {
+      setPostForm((prev) => ({
+        ...prev,
+        category: ''
+      }));
+    }
+  }, [blogCategories]);
 
   // --- ABOUT ME & KONTAKT EDITOR STATE ---
   const portraitInputRef = useRef(null);
@@ -365,26 +413,150 @@ export default function StudioView({
     setBannerMessage(msg);
     setTimeout(() => {
       setBannerMessage(null);
-    }, 4500);
+    }, 5000);
   };
 
-  // Handle file upload for Gallery
+  // --- GALLERY CATEGORY HANDLERS ---
+  const handleAddCategory = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    if (categories.includes(trimmed)) {
+      alert('Diese Galerie-Kategorie existiert bereits.');
+      return;
+    }
+    await onCreateCategory(trimmed);
+    setNewCategoryName('');
+    setPhotoForm((prev) => ({ ...prev, category: trimmed }));
+    showToast(`Neue Galerie-Kategorie „${trimmed}“ wurde erstellt.`);
+  };
+
+  const handleConfirmRenameCategory = async (oldName) => {
+    const trimmed = editingCategoryNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingCategoryOldName(null);
+      return;
+    }
+    await onRenameCategory(oldName, trimmed);
+    if (photoForm.category === oldName) {
+      setPhotoForm((prev) => ({ ...prev, category: trimmed }));
+    }
+    setEditingCategoryOldName(null);
+    setEditingCategoryNewName('');
+    showToast(`Galerie-Kategorie „${oldName}“ wurde in „${trimmed}“ umbenannt.`);
+  };
+
+  const handleRemoveCategory = async (catName) => {
+    const affectedCount = photos.filter((p) => p.category === catName).length;
+    const confirmMsg =
+      affectedCount > 0
+        ? `Möchtest du die Galerie-Kategorie „${catName}“ wirklich löschen? (${affectedCount} zugeordnete Fotos werden auf „Ohne Kategorie“ zurückgesetzt)`
+        : `Möchtest du die Galerie-Kategorie „${catName}“ wirklich löschen?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    await onDeleteCategory(catName);
+    showToast(`Galerie-Kategorie „${catName}“ wurde gelöscht.`);
+  };
+
+  // --- BLOG CATEGORY (RUBRIK) HANDLERS ---
+  const handleAddBlogCategory = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = newBlogCategoryName.trim();
+    if (!trimmed) return;
+    if (blogCategories.includes(trimmed)) {
+      alert('Diese Blog-Rubrik existiert bereits.');
+      return;
+    }
+    await onCreateBlogCategory(trimmed);
+    setNewBlogCategoryName('');
+    setPostForm((prev) => ({ ...prev, category: trimmed }));
+    showToast(`Neue Blog-Rubrik „${trimmed}“ wurde erstellt.`);
+  };
+
+  const handleConfirmRenameBlogCategory = async (oldName) => {
+    const trimmed = editingBlogCategoryNewName.trim();
+    if (!trimmed || trimmed === oldName) {
+      setEditingBlogCategoryOldName(null);
+      return;
+    }
+    await onRenameBlogCategory(oldName, trimmed);
+    if (postForm.category === oldName) {
+      setPostForm((prev) => ({ ...prev, category: trimmed }));
+    }
+    setEditingBlogCategoryOldName(null);
+    setEditingBlogCategoryNewName('');
+    showToast(`Blog-Rubrik „${oldName}“ wurde in „${trimmed}“ umbenannt.`);
+  };
+
+  const handleRemoveBlogCategory = async (catName) => {
+    const affectedCount = posts.filter((p) => p.category === catName).length;
+    const confirmMsg =
+      affectedCount > 0
+        ? `Möchtest du die Blog-Rubrik „${catName}“ wirklich löschen? (${affectedCount} zugeordnete Blogbeiträge werden auf „Ohne Rubrik“ zurückgesetzt)`
+        : `Möchtest du die Blog-Rubrik „${catName}“ wirklich löschen?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    await onDeleteBlogCategory(catName);
+    showToast(`Blog-Rubrik „${catName}“ wurde gelöscht.`);
+  };
+
+  // --- GALLERY PHOTO UPLOAD + AUTO EXIF/GPS EXTRACTION ---
   const handlePhotoFileSelect = async (file) => {
     if (!file) return;
     try {
       setIsUploading(true);
-      const uploaded = await onUploadFile(file);
+      setExifStatusMessage('Lese Bilddatei & eingebettete EXIF-/GPS-Metadaten aus...');
+
+      const [uploaded, meta] = await Promise.all([
+        onUploadFile(file),
+        extractImageMetadata(file)
+      ]);
+
       const inferredTitle = file.name
         .replace(/\.[^/.]+$/, '')
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
+
       setPhotoForm((prev) => ({
         ...prev,
         imageUrl: uploaded.imageUrl,
-        title: prev.title || inferredTitle
+        title: prev.title || inferredTitle,
+        location: meta.location || prev.location,
+        coordinates: meta.coordinates || prev.coordinates,
+        dateTaken: meta.dateTaken || prev.dateTaken,
+        exif: {
+          camera: meta.exif.camera || prev.exif.camera,
+          lens: meta.exif.lens || prev.exif.lens,
+          focalLength: meta.exif.focalLength || prev.exif.focalLength,
+          aperture: meta.exif.aperture || prev.exif.aperture,
+          shutterSpeed: meta.exif.shutterSpeed || prev.exif.shutterSpeed,
+          iso: meta.exif.iso || prev.exif.iso
+        }
       }));
-      showToast(`Bilddatei „${file.name}“ erfolgreich hochgeladen.`);
+
+      if (meta.foundExif) {
+        const foundParts = [
+          meta.exif.camera && `Kamera (${meta.exif.camera})`,
+          meta.dateTaken && `Datum (${meta.dateTaken})`,
+          meta.coordinates && `GPS (${meta.coordinates})`,
+          meta.location && `Ort (${meta.location})`
+        ].filter(Boolean);
+        setExifStatusMessage(
+          `Metadaten automatisch aus Datei übernommen: ${
+            foundParts.join(' · ') || 'Optische EXIF-Werte'
+          }`
+        );
+        showToast(
+          `„${file.name}“ hochgeladen — EXIF- & Ortsdaten wurden automatisch ausgefüllt!`
+        );
+      } else {
+        setExifStatusMessage(
+          'Keine eingebetteten EXIF-/GPS-Metadaten in dieser Bilddatei gefunden. Alle Felder sind optional.'
+        );
+        showToast(`Bilddatei „${file.name}“ erfolgreich hochgeladen.`);
+      }
     } catch (err) {
+      setExifStatusMessage(null);
       alert('Fehler beim Hochladen der Bilddatei: ' + err.message);
     } finally {
       setIsUploading(false);
@@ -402,24 +574,19 @@ export default function StudioView({
 
   const handlePublishPhoto = async (e) => {
     e.preventDefault();
-    if (!photoForm.title.trim() || !photoForm.imageUrl.trim()) {
-      alert('Bitte gib sowohl einen Titel als auch ein Bild (Datei oder URL) an.');
+    if (!photoForm.imageUrl.trim()) {
+      alert('Bitte wähle eine Bilddatei aus oder gib eine Bild-URL ein.');
       return;
     }
-    const created = await onCreatePhoto(photoForm);
+    const payload = {
+      ...photoForm,
+      title: photoForm.title.trim() || 'Unbetitelte Naturaufnahme'
+    };
+    const created = await onCreatePhoto(payload);
     showToast(`„${created.title}“ wurde in der Wolkenrose-Galerie veröffentlicht!`);
-    setPhotoForm({
-      title: '',
-      category: 'Alpen & Gletscher',
-      location: '',
-      coordinates: '47.4917° N, 11.0955° O',
-      dateTaken: new Date().toISOString().split('T')[0],
-      featured: true,
-      landingSelected: false,
-      imageUrl: '',
-      story: '',
-      exif: { ...photoForm.exif }
-    });
+    setPhotoForm(createEmptyPhotoForm(photoForm.category || categories[0] || ''));
+    setExifStatusMessage(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Toggle 1 of the 6 Landing Page Showcase Photos ("01 / Ausgewählte Fotografien")
@@ -447,7 +614,7 @@ export default function StudioView({
     );
   };
 
-  // Blog Post Block Helpers
+  // --- BLOG POST BLOCK HELPERS ---
   const addBlock = (type) => {
     const newBlock =
       type === 'image'
@@ -456,7 +623,7 @@ export default function StudioView({
             type: 'image',
             imageUrl: '',
             caption: '',
-            exifNote: 'Hasselblad X2D 100C · 38mm · f/8'
+            exifNote: ''
           }
         : type === 'quote'
           ? {
@@ -506,12 +673,21 @@ export default function StudioView({
     if (!file) return;
     try {
       setIsUploading(true);
-      const uploaded = await onUploadFile(file);
+      const [uploaded, meta] = await Promise.all([
+        onUploadFile(file),
+        extractImageMetadata(file)
+      ]);
       setPostForm((prev) => ({
         ...prev,
-        coverImage: uploaded.imageUrl
+        coverImage: uploaded.imageUrl,
+        location: prev.location || meta.location || '',
+        publishedAt: meta.dateTaken || prev.publishedAt
       }));
-      showToast(`Titelbild „${file.name}“ erfolgreich hochgeladen.`);
+      showToast(
+        meta.foundExif
+          ? `Titelbild „${file.name}“ hochgeladen (Metadaten erkannt).`
+          : `Titelbild „${file.name}“ erfolgreich hochgeladen.`
+      );
     } catch (err) {
       alert('Fehler beim Hochladen: ' + err.message);
     } finally {
@@ -523,9 +699,32 @@ export default function StudioView({
     if (!file) return;
     try {
       setIsUploading(true);
-      const uploaded = await onUploadFile(file);
-      updateBlock(blockId, { imageUrl: uploaded.imageUrl });
-      showToast(`Foto „${file.name}“ in den Blogbeitrag eingefügt.`);
+      const [uploaded, meta] = await Promise.all([
+        onUploadFile(file),
+        extractImageMetadata(file)
+      ]);
+
+      const currentBlock = postForm.blocks.find((b) => b.id === blockId);
+      const nextPatch = {
+        imageUrl: uploaded.imageUrl,
+        exifNote: meta.exifNote || currentBlock?.exifNote || '',
+        exif: meta.foundExif ? meta.exif : currentBlock?.exif,
+        location: meta.location || currentBlock?.location || '',
+        coordinates: meta.coordinates || currentBlock?.coordinates || '',
+        dateTaken: meta.dateTaken || currentBlock?.dateTaken || ''
+      };
+
+      updateBlock(blockId, nextPatch);
+
+      if (meta.location && !postForm.location) {
+        setPostForm((prev) => ({ ...prev, location: prev.location || meta.location }));
+      }
+
+      showToast(
+        meta.foundExif
+          ? `Foto „${file.name}“ eingefügt & EXIF-Aufnahmedaten automatisch übernommen!`
+          : `Foto „${file.name}“ in den Blogbeitrag eingefügt.`
+      );
     } catch (err) {
       alert('Fehler beim Hochladen: ' + err.message);
     } finally {
@@ -579,6 +778,7 @@ export default function StudioView({
 
     setPostForm(createDefaultPostForm());
     setShowPostPreview(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // --- ABOUT ME & KONTAKT HANDLERS ---
@@ -647,6 +847,14 @@ export default function StudioView({
     showToast(`Vorlage „${preset.name}“ wurde aktiviert und gespeichert!`);
   };
 
+  const previewOpticalStr = [
+    photoForm.exif.focalLength,
+    photoForm.exif.aperture,
+    photoForm.exif.shutterSpeed
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       {/* Studio Top Header */}
@@ -667,7 +875,7 @@ export default function StudioView({
             Adminbereich & Redaktion
           </h1>
           <p className="text-sm text-[var(--text-secondary)] max-w-2xl">
-            Verwalte deine Galerie, bestimme die 6 Startseiten-Fotos, schreibe Blogbeiträge, bearbeite die „Über mich“- & Kontaktseite oder passe Farben und Schriftarten an.
+            Verwalte deine Galerie und Foto-Kategorien, bestimme die 6 Startseiten-Fotos, schreibe Blogbeiträge, bearbeite die „Über mich“- & Kontaktseite oder passe Farben und Schriftarten an.
           </p>
         </div>
 
@@ -715,7 +923,7 @@ export default function StudioView({
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            <span>Archiv & Startseiten-Auswahl</span>
+            <span>Archiv, Kategorien & Startseite</span>
           </button>
 
           <button
@@ -781,11 +989,11 @@ export default function StudioView({
                   Neue Fotografie hochladen
                 </h2>
                 <p className="text-xs text-[var(--text-secondary)]">
-                  Ziehe eine Bilddatei in das Feld oder gib eine Bild-URL ein
+                  Beim Auswählen einer Bilddatei werden EXIF-Daten, Aufnahmedatum, GPS-Koordinaten und Aufnahmeort automatisch ausgelesen. Alle Angaben sind optional.
                 </p>
               </div>
-              <span className="font-telemetry text-xs text-[var(--accent-primary)]">
-                JPG · PNG · WEBP · AVIF
+              <span className="font-telemetry text-xs text-[var(--accent-primary)] shrink-0 ml-2">
+                AUTO-EXIF · GPS
               </span>
             </div>
 
@@ -827,13 +1035,27 @@ export default function StudioView({
               </div>
               <p className="text-sm font-medium text-[var(--text-primary)]">
                 {isUploading
-                  ? 'Bild wird auf den Server hochgeladen...'
+                  ? 'Bild & EXIF-Metadaten werden verarbeitet...'
                   : 'Fotografie hierher ziehen oder klicken, um Datei auszuwählen'}
               </p>
               <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Deine hochgeladenen Bilder werden direkt lokal im Ordner /uploads gespeichert
+                Kamera, Objektiv, Belichtung, Datum, GPS-Koordinaten & Ort werden automatisch aus der Datei gelesen
               </p>
             </div>
+
+            {/* EXIF Auto-Detection Feedback Banner */}
+            {exifStatusMessage && (
+              <div className="px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--accent-primary)]/40 text-xs font-telemetry text-[var(--text-primary)] flex items-center justify-between gap-2">
+                <span>{exifStatusMessage}</span>
+                <button
+                  type="button"
+                  onClick={() => setExifStatusMessage(null)}
+                  className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
 
             {/* Or Direct Image URL Input */}
             <div className="space-y-1.5">
@@ -856,11 +1078,10 @@ export default function StudioView({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  Titel der Fotografie *
+                  Titel der Fotografie (optional, sonst Dateiname)
                 </label>
                 <input
                   type="text"
-                  required
                   value={photoForm.title}
                   onChange={(e) =>
                     setPhotoForm({ ...photoForm, title: e.target.value })
@@ -871,9 +1092,18 @@ export default function StudioView({
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  Kategorie / Lebensraum
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
+                    Kategorie (optional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setSubTab('manage-archive')}
+                    className="text-[11px] font-telemetry text-[var(--accent-primary)] hover:underline cursor-pointer"
+                  >
+                    Kategorien verwalten →
+                  </button>
+                </div>
                 <select
                   value={photoForm.category}
                   onChange={(e) =>
@@ -881,21 +1111,21 @@ export default function StudioView({
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 >
-                  <option value="Alpen & Gletscher">Alpen & Gletscher</option>
-                  <option value="Wälder & Moore">Wälder & Moore</option>
-                  <option value="Nachthimmel & Polarlicht">Nachthimmel & Polarlicht</option>
-                  <option value="Wildtiere">Wildtiere</option>
-                  <option value="Küsten & Meere">Küsten & Meere</option>
-                  <option value="Wolken & Strukturen">Wolken & Strukturen</option>
+                  <option value="">— Keine Kategorie —</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Location, Coordinates & Date */}
+            {/* Location, Coordinates & Date (All Optional & Auto-filled from EXIF/GPS) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  Aufnahmeort
+                  Aufnahmeort (optional)
                 </label>
                 <input
                   type="text"
@@ -903,14 +1133,14 @@ export default function StudioView({
                   onChange={(e) =>
                     setPhotoForm({ ...photoForm, location: e.target.value })
                   }
-                  placeholder="Karwendelgebirge, Bayern"
+                  placeholder="Wird aus GPS ermittelt..."
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  GPS-Koordinaten
+                  GPS-Koordinaten (optional)
                 </label>
                 <input
                   type="text"
@@ -918,14 +1148,14 @@ export default function StudioView({
                   onChange={(e) =>
                     setPhotoForm({ ...photoForm, coordinates: e.target.value })
                   }
-                  placeholder="47.4917° N, 11.0955° O"
+                  placeholder="Wird aus EXIF gelesen..."
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm font-telemetry text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  Aufnahmedatum
+                  Aufnahmedatum (optional)
                 </label>
                 <input
                   type="date"
@@ -938,10 +1168,10 @@ export default function StudioView({
               </div>
             </div>
 
-            {/* Story / Field Notes */}
+            {/* Story / Field Notes (Optional) */}
             <div className="space-y-1.5">
               <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                Geschichte & Notizen zur Aufnahme
+                Geschichte & Notizen zur Aufnahme (optional)
               </label>
               <textarea
                 rows={3}
@@ -949,17 +1179,17 @@ export default function StudioView({
                 onChange={(e) =>
                   setPhotoForm({ ...photoForm, story: e.target.value })
                 }
-                placeholder="Erzähle von der Lichtstimmung, dem Wetter oder dem besonderen Moment dieser Aufnahme..."
+                placeholder="Optional: Erzähle von der Lichtstimmung, dem Wetter oder dem besonderen Moment..."
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               />
             </div>
 
-            {/* Camera & EXIF Telemetry Section */}
+            {/* Camera & EXIF Telemetry Section (All Optional & Auto-filled from EXIF) */}
             <div className="space-y-3 bg-[var(--bg-primary)] p-5 rounded-2xl border border-[var(--border-color)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-telemetry text-xs uppercase tracking-wider text-[var(--accent-primary)] flex items-center gap-1.5">
                   <Camera className="w-4 h-4" />
-                  Kamera & EXIF-Aufnahmedaten
+                  Kamera & EXIF-Aufnahmedaten (optional · automatisch aus Datei)
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {CAMERA_PRESETS.map((preset) => (
@@ -974,13 +1204,32 @@ export default function StudioView({
                       {preset.label}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPhotoForm({
+                        ...photoForm,
+                        exif: {
+                          camera: '',
+                          lens: '',
+                          focalLength: '',
+                          aperture: '',
+                          shutterSpeed: '',
+                          iso: ''
+                        }
+                      })
+                    }
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-telemetry bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-red-400 border border-[var(--border-color)] transition-colors cursor-pointer"
+                  >
+                    EXIF leeren
+                  </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    KAMERA
+                    KAMERA (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -991,12 +1240,13 @@ export default function StudioView({
                         exif: { ...photoForm.exif, camera: e.target.value }
                       })
                     }
+                    placeholder="Automatisch aus EXIF..."
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    OBJEKTIV
+                    OBJEKTIV (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -1007,12 +1257,13 @@ export default function StudioView({
                         exif: { ...photoForm.exif, lens: e.target.value }
                       })
                     }
+                    placeholder="Automatisch aus EXIF..."
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    BRENNWEITE
+                    BRENNWEITE (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -1023,12 +1274,13 @@ export default function StudioView({
                         exif: { ...photoForm.exif, focalLength: e.target.value }
                       })
                     }
+                    placeholder="z. B. 35mm"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    BLENDE
+                    BLENDE (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -1039,12 +1291,13 @@ export default function StudioView({
                         exif: { ...photoForm.exif, aperture: e.target.value }
                       })
                     }
+                    placeholder="z. B. f/8"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    BELICHTUNGSZEIT
+                    BELICHTUNGSZEIT (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -1058,12 +1311,13 @@ export default function StudioView({
                         }
                       })
                     }
+                    placeholder="z. B. 1/250s"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                    ISO-WERT
+                    ISO-WERT (OPTIONAL)
                   </label>
                   <input
                     type="text"
@@ -1074,6 +1328,7 @@ export default function StudioView({
                         exif: { ...photoForm.exif, iso: e.target.value }
                       })
                     }
+                    placeholder="z. B. 100"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1105,16 +1360,18 @@ export default function StudioView({
             </div>
           </form>
 
-          {/* Right 5 Cols: Live Plate Preview */}
+          {/* Right 5 Cols: Live Plate Preview & Quick Category Creator */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-4 sticky top-28 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)]">
                   Live-Vorschau der Galerie-Kachel
                 </span>
-                <span className="font-telemetry text-xs text-[var(--text-secondary)]">
-                  {photoForm.category}
-                </span>
+                {photoForm.category && (
+                  <span className="font-telemetry text-xs text-[var(--text-secondary)]">
+                    {photoForm.category}
+                  </span>
+                )}
               </div>
 
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center">
@@ -1125,36 +1382,72 @@ export default function StudioView({
                       alt={photoForm.title || 'Vorschau'}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-telemetry text-white bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-                      <span>{photoForm.exif.camera}</span>
-                      <span className="text-[var(--accent-primary)]">
-                        {photoForm.exif.focalLength} · {photoForm.exif.aperture} ·{' '}
-                        {photoForm.exif.shutterSpeed}
-                      </span>
-                    </div>
+                    {(photoForm.exif.camera || previewOpticalStr) && (
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] font-telemetry text-white bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
+                        <span className="truncate">{photoForm.exif.camera}</span>
+                        {previewOpticalStr && (
+                          <span className="text-[var(--accent-primary)] shrink-0 ml-2">
+                            {previewOpticalStr}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center p-6 space-y-2 text-[var(--text-secondary)]">
                     <ImageIcon className="w-10 h-10 mx-auto opacity-40" />
                     <p className="text-xs">
-                      Wähle eine Bilddatei aus oder füge eine URL ein, um die Vorschau für die Galerie zu sehen
+                      Wähle eine Bilddatei aus, um die Vorschau und die automatisch erkannten EXIF-Daten zu sehen
                     </p>
                   </div>
                 )}
               </div>
 
               <div className="space-y-2 pt-2">
-                <div className="text-xs font-telemetry text-[var(--accent-secondary)]">
-                  {photoForm.location || 'Aufnahmeort noch offen'} ·{' '}
-                  {photoForm.dateTaken}
-                </div>
+                {(photoForm.location || photoForm.dateTaken) && (
+                  <div className="text-xs font-telemetry text-[var(--accent-secondary)]">
+                    {[photoForm.location, photoForm.dateTaken].filter(Boolean).join(' · ')}
+                  </div>
+                )}
                 <h3 className="font-editorial text-2xl text-[var(--text-primary)]">
                   {photoForm.title || 'Unbetitelte Naturaufnahme'}
                 </h3>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  {photoForm.story ||
-                    'Deine Hintergrundgeschichte und Aufnahmedaten erscheinen hier unter dem Werk.'}
-                </p>
+                {photoForm.story && (
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                    {photoForm.story}
+                  </p>
+                )}
+              </div>
+
+              {/* Quick Add Category Box */}
+              <div className="pt-4 border-t border-[var(--border-color)] space-y-2.5">
+                <span className="font-telemetry text-[11px] uppercase tracking-wider text-[var(--text-secondary)] block">
+                  Schnell eine neue Foto-Kategorie anlegen
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCategory();
+                      }
+                    }}
+                    placeholder="Neue Kategorie (z. B. Makro & Details)..."
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCategory}
+                    style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                    className="px-3.5 py-2 rounded-xl text-xs font-semibold cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Anlegen</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1176,7 +1469,7 @@ export default function StudioView({
                     : 'Neuen Blogbeitrag verfassen'}
                 </h2>
                 <p className="text-xs text-[var(--text-secondary)]">
-                  Kombiniere Textabsätze, Zwischenüberschriften, Zitate und eigene Fotografien
+                  Beim Hochladen von Fotos werden EXIF-Aufnahmedaten, Ort und Zeit automatisch aus dem Bild ausgelesen (alle Angaben sind optional).
                 </p>
               </div>
             </div>
@@ -1218,7 +1511,7 @@ export default function StudioView({
               )}
               <div className="space-y-3 border-b border-[var(--border-color)] pb-6">
                 <span className="px-3 py-1 rounded-full text-xs font-telemetry bg-[var(--surface-subtle)] text-[var(--accent-primary)] border border-[var(--border-color)]">
-                  {postForm.category} · {postForm.location}
+                  {[postForm.category, postForm.location].filter(Boolean).join(' · ')}
                 </span>
                 <h1 className="font-editorial text-4xl sm:text-5xl text-[var(--text-primary)]">
                   {postForm.title || 'Unbetitelter Blogbeitrag'}
@@ -1313,7 +1606,7 @@ export default function StudioView({
 
                     <div className="space-y-1.5">
                       <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                        Untertitel / Einleitung
+                        Untertitel / Einleitung (optional)
                       </label>
                       <textarea
                         rows={2}
@@ -1328,9 +1621,18 @@ export default function StudioView({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)] mb-1">
-                          Rubrik
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
+                            Rubrik (optional)
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => setSubTab('manage-archive')}
+                            className="text-[11px] font-telemetry text-[var(--accent-primary)] hover:underline cursor-pointer"
+                          >
+                            Verwalten →
+                          </button>
+                        </div>
                         <select
                           value={postForm.category}
                           onChange={(e) =>
@@ -1338,16 +1640,18 @@ export default function StudioView({
                           }
                           className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)]"
                         >
-                          <option value="Reisetagebuch">Reisetagebuch</option>
-                          <option value="Hinter der Kamera">Hinter der Kamera</option>
-                          <option value="Ausrüstung & Technik">Ausrüstung & Technik</option>
-                          <option value="Naturschutz">Naturschutz</option>
+                          <option value="">— Keine Rubrik —</option>
+                          {blogCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)] mb-1">
-                          Ort / Region
+                          Ort / Region (optional · aus GPS)
                         </label>
                         <input
                           type="text"
@@ -1355,14 +1659,14 @@ export default function StudioView({
                           onChange={(e) =>
                             setPostForm({ ...postForm, location: e.target.value })
                           }
-                          placeholder="Oberbayern · Alpen"
+                          placeholder="Optional oder automatisch aus Foto"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)]"
                         />
                       </div>
 
                       <div>
                         <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)] mb-1">
-                          Schlagworte (mit Komma)
+                          Schlagworte (optional, mit Komma)
                         </label>
                         <input
                           type="text"
@@ -1470,7 +1774,11 @@ export default function StudioView({
                           key={p.id}
                           type="button"
                           onClick={() => {
-                            setPostForm({ ...postForm, coverImage: p.imageUrl });
+                            setPostForm({
+                              ...postForm,
+                              coverImage: p.imageUrl,
+                              location: postForm.location || p.location || ''
+                            });
                             setGalleryPickerTarget(null);
                           }}
                           className="group relative aspect-[4/3] rounded-lg overflow-hidden border border-[var(--border-color)] hover:border-[var(--accent-primary)] cursor-pointer"
@@ -1509,7 +1817,7 @@ export default function StudioView({
                         {block.type === 'paragraph'
                           ? 'TEXTABSATZ'
                           : block.type === 'image'
-                            ? 'FOTOGRAFIE'
+                            ? 'FOTOGRAFIE (AUTO-EXIF)'
                             : block.type === 'heading'
                               ? 'ÜBERSCHRIFT'
                               : 'ZITAT'}
@@ -1586,7 +1894,7 @@ export default function StudioView({
                           onChange={(e) =>
                             updateBlock(block.id, { author: e.target.value })
                           }
-                          placeholder="Quelle / Ort"
+                          placeholder="Quelle / Ort (optional)"
                           className="px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                         />
                       </div>
@@ -1672,7 +1980,7 @@ export default function StudioView({
 
                           <div>
                             <label className="block text-[10px] font-telemetry uppercase text-[var(--text-secondary)] mb-1">
-                              Bildunterschrift & Beschreibung
+                              Bildunterschrift & Beschreibung (optional)
                             </label>
                             <input
                               type="text"
@@ -1682,14 +1990,14 @@ export default function StudioView({
                                   caption: e.target.value
                                 })
                               }
-                              placeholder="z. B. Erste Sonnenstrahlen über dem Nebelmeer"
+                              placeholder="Optional: z. B. Erste Sonnenstrahlen über dem Nebelmeer"
                               className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-primary)]"
                             />
                           </div>
 
                           <div>
                             <label className="block text-[10px] font-telemetry uppercase text-[var(--text-secondary)] mb-1">
-                              Kamera- & EXIF-Notiz
+                              Kamera-, EXIF- & Orts-Notiz (optional · wird beim Upload automatisch ausgelesen)
                             </label>
                             <input
                               type="text"
@@ -1699,7 +2007,7 @@ export default function StudioView({
                                   exifNote: e.target.value
                                 })
                               }
-                              placeholder="Hasselblad X2D 100C · 38mm · f/11 · 1/15s · ISO 64"
+                              placeholder="Optional (wird bei vorhandenen EXIF-Metadaten automatisch ausgefüllt)"
                               className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--accent-primary)]"
                             />
                           </div>
@@ -1708,34 +2016,46 @@ export default function StudioView({
                         {galleryPickerTarget === block.id && (
                           <div className="md:col-span-12 p-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--accent-primary)] space-y-2.5">
                             <span className="text-xs font-telemetry text-[var(--accent-primary)] block">
-                              Wähle ein Foto aus deiner Galerie aus, um es in diesen Abschnitt einzufügen:
+                              Wähle ein Foto aus deiner Galerie aus, um es inklusive seiner Metadaten einzufügen:
                             </span>
                             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5 max-h-40 overflow-y-auto">
-                              {photos.map((p) => (
-                                <button
-                                  key={p.id}
-                                  type="button"
-                                  onClick={() => {
-                                    updateBlock(block.id, {
-                                      imageUrl: p.imageUrl,
-                                      caption:
-                                        block.caption ||
-                                        `${p.title} — ${p.location}`,
-                                      exifNote: `${p.exif?.camera || ''} · ${
-                                        p.exif?.focalLength || ''
-                                      } · ${p.exif?.aperture || ''}`
-                                    });
-                                    setGalleryPickerTarget(null);
-                                  }}
-                                  className="aspect-[4/3] rounded-lg overflow-hidden border border-[var(--border-color)] hover:border-[var(--accent-primary)] cursor-pointer"
-                                >
-                                  <img
-                                    src={p.imageUrl}
-                                    alt={p.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                </button>
-                              ))}
+                              {photos.map((p) => {
+                                const noteParts = [
+                                  p.exif?.camera,
+                                  p.exif?.focalLength,
+                                  p.exif?.aperture,
+                                  p.exif?.shutterSpeed,
+                                  p.location
+                                ].filter(Boolean);
+
+                                return (
+                                  <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => {
+                                      updateBlock(block.id, {
+                                        imageUrl: p.imageUrl,
+                                        caption:
+                                          block.caption ||
+                                          [p.title, p.location].filter(Boolean).join(' — '),
+                                        exifNote: noteParts.join(' · '),
+                                        exif: p.exif,
+                                        location: p.location || '',
+                                        coordinates: p.coordinates || '',
+                                        dateTaken: p.dateTaken || ''
+                                      });
+                                      setGalleryPickerTarget(null);
+                                    }}
+                                    className="aspect-[4/3] rounded-lg overflow-hidden border border-[var(--border-color)] hover:border-[var(--accent-primary)] cursor-pointer"
+                                  >
+                                    <img
+                                      src={p.imageUrl}
+                                      alt={p.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -1813,10 +2133,274 @@ export default function StudioView({
       )}
 
       {/* ===================================================================== */}
-      {/* TAB 3: MANAGE ARCHIVE & 6-PHOTO LANDING PAGE SELECTION TOOL           */}
+      {/* TAB 3: MANAGE ARCHIVE, CATEGORIES & 6-PHOTO LANDING SELECTION         */}
       {/* ===================================================================== */}
       {subTab === 'manage-archive' && (
         <div className="space-y-12">
+          {/* COMBINED GALLERY & BLOG CATEGORIES MANAGER (Create, Rename, Delete) */}
+          <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-8 shadow-sm">
+            <div className="space-y-1 border-b border-[var(--border-color)] pb-5">
+              <div className="flex items-center gap-2 text-[var(--accent-primary)] font-telemetry text-xs uppercase tracking-widest">
+                <Tags className="w-4 h-4" />
+                <span>Kategorien- & Rubriken-Verwaltung</span>
+              </div>
+              <h2 className="font-editorial text-2xl sm:text-3xl text-[var(--text-primary)]">
+                Galerie-Kategorien & Blog-Rubriken verwalten
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
+                Erstelle, benenne um oder lösche Kategorien für die Fotogalerie sowie Rubriken für den Blog. Wird eine verwendete Kategorie gelöscht, werden die betroffenen Einträge automatisch auf „Ohne Kategorie / Rubrik“ gesetzt.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Left Column: Gallery Photo Categories */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-editorial text-xl text-[var(--text-primary)]">
+                      1. Foto-Kategorien (Galerie)
+                    </h3>
+                    <span className="font-telemetry text-[11px] text-[var(--text-secondary)]">
+                      {categories.length} aktive Galerie-Kategorien
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleAddCategory} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      placeholder="Neue Foto-Kategorie..."
+                      className="px-3.5 py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                    />
+                    <button
+                      type="submit"
+                      style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold cursor-pointer shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Erstellen</span>
+                    </button>
+                  </form>
+                </div>
+
+                {categories.length === 0 ? (
+                  <p className="text-xs text-[var(--text-secondary)] p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                    Aktuell sind keine Galerie-Kategorien angelegt.
+                  </p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {categories.map((cat) => {
+                      const count = photos.filter((p) => p.category === cat).length;
+                      const isEditing = editingCategoryOldName === cat;
+
+                      return (
+                        <div
+                          key={cat}
+                          className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
+                        >
+                          {isEditing ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="text"
+                                autoFocus
+                                value={editingCategoryNewName}
+                                onChange={(e) => setEditingCategoryNewName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleConfirmRenameCategory(cat);
+                                  }
+                                  if (e.key === 'Escape') {
+                                    setEditingCategoryOldName(null);
+                                  }
+                                }}
+                                className="flex-1 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--accent-primary)] text-xs text-[var(--text-primary)] focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmRenameCategory(cat)}
+                                style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                                className="p-1.5 rounded-lg cursor-pointer"
+                                title="Umbenennung speichern"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingCategoryOldName(null)}
+                                className="p-1.5 rounded-lg bg-[var(--surface-subtle)] text-[var(--text-secondary)] cursor-pointer"
+                                title="Abbrechen"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="min-w-0">
+                                <span className="font-medium text-sm text-[var(--text-primary)] block truncate">
+                                  {cat}
+                                </span>
+                                <span className="font-telemetry text-[11px] text-[var(--text-secondary)]">
+                                  {count} {count === 1 ? 'Fotografie' : 'Fotografien'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingCategoryOldName(cat);
+                                    setEditingCategoryNewName(cat);
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] border border-[var(--border-color)] cursor-pointer"
+                                  title="Kategorie umbenennen"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                                  <span>Umbenennen</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveCategory(cat)}
+                                  className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 cursor-pointer"
+                                  title="Kategorie löschen"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Blog Categories (Rubriken) */}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-editorial text-xl text-[var(--text-primary)]">
+                      2. Blog-Rubriken (Blog)
+                    </h3>
+                    <span className="font-telemetry text-[11px] text-[var(--text-secondary)]">
+                      {blogCategories.length} aktive Blog-Rubriken
+                    </span>
+                  </div>
+
+                  <form onSubmit={handleAddBlogCategory} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newBlogCategoryName}
+                      onChange={(e) => setNewBlogCategoryName(e.target.value)}
+                      placeholder="Neue Blog-Rubrik..."
+                      className="px-3.5 py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                    />
+                    <button
+                      type="submit"
+                      style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                      className="inline-flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-semibold cursor-pointer shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Erstellen</span>
+                    </button>
+                  </form>
+                </div>
+
+                {blogCategories.length === 0 ? (
+                  <p className="text-xs text-[var(--text-secondary)] p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                    Aktuell sind keine Blog-Rubriken angelegt.
+                  </p>
+                ) : (
+                  <div className="space-y-2.5">
+                    {blogCategories.map((cat) => {
+                      const count = posts.filter((p) => p.category === cat).length;
+                      const isEditing = editingBlogCategoryOldName === cat;
+
+                      return (
+                        <div
+                          key={cat}
+                          className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
+                        >
+                          {isEditing ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                type="text"
+                                autoFocus
+                                value={editingBlogCategoryNewName}
+                                onChange={(e) => setEditingBlogCategoryNewName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleConfirmRenameBlogCategory(cat);
+                                  }
+                                  if (e.key === 'Escape') {
+                                    setEditingBlogCategoryOldName(null);
+                                  }
+                                }}
+                                className="flex-1 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--accent-primary)] text-xs text-[var(--text-primary)] focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleConfirmRenameBlogCategory(cat)}
+                                style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                                className="p-1.5 rounded-lg cursor-pointer"
+                                title="Umbenennung speichern"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingBlogCategoryOldName(null)}
+                                className="p-1.5 rounded-lg bg-[var(--surface-subtle)] text-[var(--text-secondary)] cursor-pointer"
+                                title="Abbrechen"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="min-w-0">
+                                <span className="font-medium text-sm text-[var(--text-primary)] block truncate">
+                                  {cat}
+                                </span>
+                                <span className="font-telemetry text-[11px] text-[var(--text-secondary)]">
+                                  {count} {count === 1 ? 'Blogbeitrag' : 'Blogbeiträge'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingBlogCategoryOldName(cat);
+                                    setEditingBlogCategoryNewName(cat);
+                                  }}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] border border-[var(--border-color)] cursor-pointer"
+                                  title="Rubrik umbenennen"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                                  <span>Umbenennen</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBlogCategory(cat)}
+                                  className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 cursor-pointer"
+                                  title="Rubrik löschen"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* 6-Photo Selection Tool for Landing Page ("01 / Ausgewählte Fotografien") */}
           <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-5">
@@ -1897,9 +2481,24 @@ export default function StudioView({
 
                     <div className="p-4 space-y-3">
                       <div>
-                        <span className="text-[10px] font-telemetry text-[var(--accent-secondary)] block">
-                          {photo.category}
-                        </span>
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <select
+                            value={photo.category || ''}
+                            onChange={(e) => {
+                              onUpdatePhoto(photo.id, { category: e.target.value });
+                              showToast(`Kategorie für „${photo.title}“ geändert.`);
+                            }}
+                            className="text-[11px] font-telemetry bg-[var(--bg-secondary)] text-[var(--accent-secondary)] border border-[var(--border-color)] rounded-lg px-2 py-0.5 max-w-full cursor-pointer"
+                            title="Kategorie dieses Fotos ändern"
+                          >
+                            <option value="">— Ohne Kategorie —</option>
+                            {categories.map((cat) => (
+                              <option key={cat} value={cat}>
+                                {cat}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <h4 className="font-editorial text-lg text-[var(--text-primary)] truncate">
                           {photo.title}
                         </h4>
@@ -1995,22 +2594,38 @@ export default function StudioView({
                   key={post.id}
                   className="p-4 sm:p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
-                  <div
-                    onClick={() => onSelectPost(post)}
-                    className="flex items-center gap-4 cursor-pointer group"
-                  >
+                  <div className="flex items-center gap-4">
                     <img
+                      onClick={() => onSelectPost(post)}
                       src={post.coverImage}
                       alt={post.title}
-                      className="w-20 h-16 rounded-xl object-cover shrink-0"
+                      className="w-20 h-16 rounded-xl object-cover shrink-0 cursor-pointer"
                     />
                     <div>
-                      <div className="flex items-center gap-2 text-xs font-telemetry text-[var(--accent-primary)]">
-                        <span>{post.category}</span>
+                      <div className="flex flex-wrap items-center gap-2 text-xs font-telemetry text-[var(--accent-primary)] mb-1">
+                        <select
+                          value={post.category || ''}
+                          onChange={(e) => {
+                            onUpdatePost(post.id, { ...post, category: e.target.value });
+                            showToast(`Rubrik für „${post.title}“ geändert.`);
+                          }}
+                          className="text-[11px] font-telemetry bg-[var(--bg-secondary)] text-[var(--accent-primary)] border border-[var(--border-color)] rounded-lg px-2 py-0.5 cursor-pointer"
+                          title="Rubrik dieses Beitrags ändern"
+                        >
+                          <option value="">— Ohne Rubrik —</option>
+                          {blogCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
                         <span>•</span>
                         <span className="text-[var(--text-secondary)]">{post.publishedAt}</span>
                       </div>
-                      <h4 className="font-editorial text-xl text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                      <h4
+                        onClick={() => onSelectPost(post)}
+                        className="font-editorial text-xl text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer"
+                      >
                         {post.title}
                       </h4>
                     </div>
@@ -2024,7 +2639,7 @@ export default function StudioView({
                           id: post.id,
                           title: post.title,
                           subtitle: post.subtitle || '',
-                          category: post.category || 'Reisetagebuch',
+                          category: post.category || '',
                           location: post.location || '',
                           publishedAt: post.publishedAt,
                           featured: Boolean(post.featured),
@@ -2910,24 +3525,12 @@ export default function StudioView({
                         {theme[item.key]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={theme[item.key]}
-                        onChange={(e) =>
-                          handleColorFieldChange(item.key, e.target.value)
-                        }
-                        className="w-9 h-9 rounded-lg cursor-pointer border-0 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={theme[item.key]}
-                        onChange={(e) =>
-                          handleColorFieldChange(item.key, e.target.value)
-                        }
-                        className="w-24 px-2.5 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] font-telemetry text-xs text-[var(--text-primary)]"
-                      />
-                    </div>
+                    <input
+                      type="color"
+                      value={theme[item.key]}
+                      onChange={(e) => handleColorFieldChange(item.key, e.target.value)}
+                      className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
+                    />
                   </div>
                 ))}
               </div>
@@ -2957,7 +3560,7 @@ export default function StudioView({
                 {[
                   {
                     key: 'lightBgPrimary',
-                    label: 'Haupt-Hintergrund (Naturpapier)'
+                    label: 'Haupt-Hintergrund (Papier-Ton)'
                   },
                   {
                     key: 'lightBgSecondary',
@@ -2984,24 +3587,12 @@ export default function StudioView({
                         {theme[item.key]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={theme[item.key]}
-                        onChange={(e) =>
-                          handleColorFieldChange(item.key, e.target.value)
-                        }
-                        className="w-9 h-9 rounded-lg cursor-pointer border-0 bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={theme[item.key]}
-                        onChange={(e) =>
-                          handleColorFieldChange(item.key, e.target.value)
-                        }
-                        className="w-24 px-2.5 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] font-telemetry text-xs text-[var(--text-primary)]"
-                      />
-                    </div>
+                    <input
+                      type="color"
+                      value={theme[item.key]}
+                      onChange={(e) => handleColorFieldChange(item.key, e.target.value)}
+                      className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
+                    />
                   </div>
                 ))}
               </div>

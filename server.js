@@ -32,6 +32,12 @@ function loadDb() {
   try {
     const raw = fs.readFileSync(DB_PATH, 'utf-8');
     const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.categories)) {
+      parsed.categories = structuredClone(initialData.categories);
+    }
+    if (!Array.isArray(parsed.blogCategories)) {
+      parsed.blogCategories = structuredClone(initialData.blogCategories);
+    }
     if (!parsed.theme) {
       parsed.theme = structuredClone(initialData.theme);
     } else {
@@ -104,7 +110,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   });
 });
 
-// POST create a new gallery photo
+// POST create a new gallery photo (EXIF, location, coordinates, dateTaken, story are all optional)
 app.post('/api/photos', (req, res) => {
   const db = loadDb();
   const {
@@ -121,35 +127,141 @@ app.post('/api/photos', (req, res) => {
     exif
   } = req.body;
 
-  if (!title || !imageUrl) {
-    return res.status(400).json({ error: 'Titel und Bild sind erforderlich' });
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'Ein Bild ist erforderlich' });
   }
 
   const newPhoto = {
     id: `photo-${Date.now()}`,
-    title: title.trim(),
-    category: category || 'Alpen & Gletscher',
-    location: location || 'Alpenraum',
-    coordinates: coordinates || '47.4917° N, 11.0955° O',
-    dateTaken: dateTaken || new Date().toISOString().split('T')[0],
+    title: (title || 'Unbetitelte Aufnahme').trim(),
+    category: category ? category.trim() : '',
+    location: location ? location.trim() : '',
+    coordinates: coordinates ? coordinates.trim() : '',
+    dateTaken: dateTaken ? dateTaken.trim() : '',
     featured: Boolean(featured),
     landingSelected: Boolean(landingSelected),
     aspectRatio: aspectRatio || 'landscape',
     imageUrl,
-    story: story || '',
+    story: story ? story.trim() : '',
     exif: {
-      camera: exif?.camera || 'Hasselblad X2D 100C',
-      lens: exif?.lens || 'XCD 2,5/55V',
-      focalLength: exif?.focalLength || '55mm',
-      aperture: exif?.aperture || 'f/8',
-      shutterSpeed: exif?.shutterSpeed || '1/125s',
-      iso: exif?.iso || '100'
+      camera: exif?.camera?.trim() || '',
+      lens: exif?.lens?.trim() || '',
+      focalLength: exif?.focalLength?.trim() || '',
+      aperture: exif?.aperture?.trim() || '',
+      shutterSpeed: exif?.shutterSpeed?.trim() || '',
+      iso: exif?.iso?.trim() || ''
     }
   };
+
+  if (newPhoto.category && !db.categories.includes(newPhoto.category)) {
+    db.categories.push(newPhoto.category);
+  }
 
   db.photos.unshift(newPhoto);
   saveDb(db);
   res.status(201).json(newPhoto);
+});
+
+// POST create a new gallery photo category
+app.post('/api/categories', (req, res) => {
+  const db = loadDb();
+  const name = (req.body?.name || '').trim();
+  if (!name) {
+    return res.status(400).json({ error: 'Kategoriename darf nicht leer sein' });
+  }
+  if (!db.categories.includes(name)) {
+    db.categories.push(name);
+    saveDb(db);
+  }
+  res.json({ categories: db.categories, photos: db.photos });
+});
+
+// PUT rename an existing gallery photo category
+app.put('/api/categories', (req, res) => {
+  const db = loadDb();
+  const oldName = (req.body?.oldName || '').trim();
+  const newName = (req.body?.newName || '').trim();
+  if (!oldName || !newName) {
+    return res.status(400).json({ error: 'Alter und neuer Kategoriename erforderlich' });
+  }
+
+  db.categories = db.categories.map((cat) => (cat === oldName ? newName : cat));
+  db.categories = Array.from(new Set(db.categories));
+
+  db.photos = db.photos.map((photo) =>
+    photo.category === oldName ? { ...photo, category: newName } : photo
+  );
+
+  saveDb(db);
+  res.json({ categories: db.categories, photos: db.photos });
+});
+
+// DELETE a gallery photo category (existing photos in this category default to no category: '')
+app.delete('/api/categories', (req, res) => {
+  const db = loadDb();
+  const name = (req.body?.name || '').trim();
+  if (!name) {
+    return res.status(400).json({ error: 'Kategoriename erforderlich' });
+  }
+
+  db.categories = db.categories.filter((cat) => cat !== name);
+  db.photos = db.photos.map((photo) =>
+    photo.category === name ? { ...photo, category: '' } : photo
+  );
+
+  saveDb(db);
+  res.json({ categories: db.categories, photos: db.photos });
+});
+
+// POST create a new blog category (Rubrik)
+app.post('/api/blog-categories', (req, res) => {
+  const db = loadDb();
+  const name = (req.body?.name || '').trim();
+  if (!name) {
+    return res.status(400).json({ error: 'Rubrikname darf nicht leer sein' });
+  }
+  if (!db.blogCategories.includes(name)) {
+    db.blogCategories.push(name);
+    saveDb(db);
+  }
+  res.json({ blogCategories: db.blogCategories, posts: db.posts });
+});
+
+// PUT rename an existing blog category (Rubrik)
+app.put('/api/blog-categories', (req, res) => {
+  const db = loadDb();
+  const oldName = (req.body?.oldName || '').trim();
+  const newName = (req.body?.newName || '').trim();
+  if (!oldName || !newName) {
+    return res.status(400).json({ error: 'Alter und neuer Rubrikname erforderlich' });
+  }
+
+  db.blogCategories = db.blogCategories.map((cat) => (cat === oldName ? newName : cat));
+  db.blogCategories = Array.from(new Set(db.blogCategories));
+
+  db.posts = db.posts.map((post) =>
+    post.category === oldName ? { ...post, category: newName } : post
+  );
+
+  saveDb(db);
+  res.json({ blogCategories: db.blogCategories, posts: db.posts });
+});
+
+// DELETE a blog category (existing blog posts in this category default to no category: '')
+app.delete('/api/blog-categories', (req, res) => {
+  const db = loadDb();
+  const name = (req.body?.name || '').trim();
+  if (!name) {
+    return res.status(400).json({ error: 'Rubrikname erforderlich' });
+  }
+
+  db.blogCategories = db.blogCategories.filter((cat) => cat !== name);
+  db.posts = db.posts.map((post) =>
+    post.category === name ? { ...post, category: '' } : post
+  );
+
+  saveDb(db);
+  res.json({ blogCategories: db.blogCategories, posts: db.posts });
 });
 
 // PUT update landing page 6-photo selection
@@ -225,8 +337,8 @@ app.post('/api/posts', (req, res) => {
     id: `post-${Date.now()}`,
     title: title.trim(),
     subtitle: subtitle || '',
-    category: category || 'Reisetagebuch',
-    location: location || 'Unterwegs in der Natur',
+    category: category ? category.trim() : '',
+    location: location ? location.trim() : '',
     publishedAt: publishedAt || new Date().toISOString().split('T')[0],
     featured: Boolean(featured),
     coverImage:
@@ -242,6 +354,10 @@ app.post('/api/posts', (req, res) => {
         : ['Naturfotografie'],
     blocks: Array.isArray(blocks) && blocks.length > 0 ? blocks : []
   };
+
+  if (newPost.category && !db.blogCategories.includes(newPost.category)) {
+    db.blogCategories.push(newPost.category);
+  }
 
   db.posts.unshift(newPost);
   saveDb(db);

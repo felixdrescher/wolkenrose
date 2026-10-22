@@ -1,4 +1,18 @@
 export const initialData = {
+  categories: [
+    "Alpen & Gletscher",
+    "Wälder & Moore",
+    "Nachthimmel & Polarlicht",
+    "Wildtiere",
+    "Küsten & Meere",
+    "Wolken & Strukturen"
+  ],
+  blogCategories: [
+    "Reisetagebuch",
+    "Hinter der Kamera",
+    "Ausrüstung & Technik",
+    "Naturschutz"
+  ],
   theme: {
     defaultMode: "dark",
     accentPrimary: "#D4A359",

@@ -32,6 +32,10 @@ export default function App() {
       : initialData.theme?.defaultMode || 'dark';
   });
 
+  const [categories, setCategories] = useState(initialData.categories || []);
+  const [blogCategories, setBlogCategories] = useState(
+    initialData.blogCategories || []
+  );
   const [profile, setProfile] = useState(initialData.profile);
   const [photos, setPhotos] = useState(initialData.photos);
   const [posts, setPosts] = useState(initialData.posts);
@@ -49,6 +53,12 @@ export default function App() {
         return res.json();
       })
       .then((data) => {
+        if (Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        }
+        if (Array.isArray(data.blogCategories)) {
+          setBlogCategories(data.blogCategories);
+        }
         if (data.theme) {
           setTheme({ ...initialData.theme, ...data.theme });
           if (!localStorage.getItem('wolkenrose_color_mode') && data.theme.defaultMode) {
@@ -160,6 +170,152 @@ export default function App() {
     }
   };
 
+  // --- CATEGORY MANAGEMENT HANDLERS ---
+  const handleCreateCategory = async (name) => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return;
+    setCategories((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  const handleRenameCategory = async (oldName, newName) => {
+    const trimmedOld = (oldName || '').trim();
+    const trimmedNew = (newName || '').trim();
+    if (!trimmedOld || !trimmedNew) return;
+    setCategories((prev) =>
+      Array.from(new Set(prev.map((c) => (c === trimmedOld ? trimmedNew : c))))
+    );
+    setPhotos((prev) =>
+      prev.map((p) => (p.category === trimmedOld ? { ...p, category: trimmedNew } : p))
+    );
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldName: trimmedOld, newName: trimmedNew })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+        if (Array.isArray(data.photos)) setPhotos(data.photos);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  const handleDeleteCategory = async (name) => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return;
+    setCategories((prev) => prev.filter((c) => c !== trimmed));
+    setPhotos((prev) =>
+      prev.map((p) => (p.category === trimmed ? { ...p, category: '' } : p))
+    );
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+        if (Array.isArray(data.photos)) setPhotos(data.photos);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  // --- BLOG CATEGORY (RUBRIK) MANAGEMENT HANDLERS ---
+  const handleCreateBlogCategory = async (name) => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return;
+    setBlogCategories((prev) =>
+      prev.includes(trimmed) ? prev : [...prev, trimmed]
+    );
+    try {
+      const res = await fetch('/api/blog-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.blogCategories)) {
+          setBlogCategories(data.blogCategories);
+        }
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  const handleRenameBlogCategory = async (oldName, newName) => {
+    const trimmedOld = (oldName || '').trim();
+    const trimmedNew = (newName || '').trim();
+    if (!trimmedOld || !trimmedNew) return;
+    setBlogCategories((prev) =>
+      Array.from(new Set(prev.map((c) => (c === trimmedOld ? trimmedNew : c))))
+    );
+    setPosts((prev) =>
+      prev.map((p) => (p.category === trimmedOld ? { ...p, category: trimmedNew } : p))
+    );
+    try {
+      const res = await fetch('/api/blog-categories', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldName: trimmedOld, newName: trimmedNew })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.blogCategories)) {
+          setBlogCategories(data.blogCategories);
+        }
+        if (Array.isArray(data.posts)) setPosts(data.posts);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  const handleDeleteBlogCategory = async (name) => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return;
+    setBlogCategories((prev) => prev.filter((c) => c !== trimmed));
+    setPosts((prev) =>
+      prev.map((p) => (p.category === trimmed ? { ...p, category: '' } : p))
+    );
+    try {
+      const res = await fetch('/api/blog-categories', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmed })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.blogCategories)) {
+          setBlogCategories(data.blogCategories);
+        }
+        if (Array.isArray(data.posts)) setPosts(data.posts);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
   const handleUpdateLandingSelection = async (photoIds) => {
     const selectedSet = new Set(photoIds.slice(0, 6));
     setPhotos((prev) =>
@@ -189,12 +345,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenStudioTab = (subTab) => {
-    setStudioSubTab(subTab);
-    setActiveTab('studio');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   // Upload image file to backend /api/upload
   const handleUploadFile = async (file) => {
     const formData = new FormData();
@@ -219,6 +369,9 @@ export default function App() {
     if (!res.ok) throw new Error('Foto konnte nicht gespeichert werden');
     const created = await res.json();
     setPhotos((prev) => [created, ...prev]);
+    if (created.category && !categories.includes(created.category)) {
+      setCategories((prev) => [...prev, created.category]);
+    }
     return created;
   };
 
@@ -311,6 +464,7 @@ export default function App() {
         {activeTab === 'gallery' && (
           <GalleryView
             photos={photos}
+            categories={categories}
             onSelectPhoto={handleOpenGalleryPhoto}
           />
         )}
@@ -318,6 +472,7 @@ export default function App() {
         {activeTab === 'journal' && (
           <BlogView
             posts={posts}
+            blogCategories={blogCategories}
             onSelectPost={setSelectedPost}
           />
         )}
@@ -326,6 +481,8 @@ export default function App() {
           <StudioView
             initialSubTab={studioSubTab}
             photos={photos}
+            categories={categories}
+            blogCategories={blogCategories}
             posts={posts}
             profile={profile}
             editingPost={editingPost}
@@ -335,6 +492,12 @@ export default function App() {
             onUpdatePhoto={handleUpdatePhoto}
             onDeletePhoto={handleDeletePhoto}
             onUpdateLandingSelection={handleUpdateLandingSelection}
+            onCreateCategory={handleCreateCategory}
+            onRenameCategory={handleRenameCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onCreateBlogCategory={handleCreateBlogCategory}
+            onRenameBlogCategory={handleRenameBlogCategory}
+            onDeleteBlogCategory={handleDeleteBlogCategory}
             onCreatePost={handleCreatePost}
             onUpdatePost={handleUpdatePost}
             onDeletePost={handleDeletePost}

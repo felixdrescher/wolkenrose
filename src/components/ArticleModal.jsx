@@ -44,12 +44,14 @@ export default function ArticleModal({
           id: block.id || `${post.id}-img-${idx}`,
           title: block.caption || post.title,
           category: post.category || 'Blogbeitrag',
-          location: post.location || '',
-          dateTaken: post.publishedAt || '',
+          location: block.location || post.location || '',
+          coordinates: block.coordinates || '',
+          dateTaken: block.dateTaken || post.publishedAt || '',
           imageUrl: block.imageUrl,
           story: block.exifNote
             ? `Aufnahmedaten: ${block.exifNote}`
-            : block.caption || ''
+            : block.caption || '',
+          exif: block.exif || undefined
         });
       }
     });
@@ -58,16 +60,18 @@ export default function ArticleModal({
 
   if (!post) return null;
 
-  const handleOpenImage = (imageUrl, caption, exifNote) => {
+  const handleOpenImage = (imageUrl, caption, exifNote, block) => {
     if (!onSelectEmbeddedPhoto) return;
     const found = postPhotos.find((p) => p.imageUrl === imageUrl) || {
       id: `blog-img-${Date.now()}`,
       title: caption || post.title,
       category: post.category || 'Blogbeitrag',
-      location: post.location || '',
-      dateTaken: post.publishedAt || '',
+      location: block?.location || post.location || '',
+      coordinates: block?.coordinates || '',
+      dateTaken: block?.dateTaken || post.publishedAt || '',
       imageUrl,
-      story: exifNote ? `Aufnahmedaten: ${exifNote}` : caption || ''
+      story: exifNote ? `Aufnahmedaten: ${exifNote}` : caption || '',
+      exif: block?.exif || undefined
     };
     onSelectEmbeddedPhoto(found, postPhotos);
   };
@@ -95,7 +99,7 @@ export default function ArticleModal({
               }}
               className="px-3 py-1 rounded-full text-xs font-telemetry border"
             >
-              {post.category}
+              {post.category || 'Blogbeitrag'}
             </span>
           </div>
 
@@ -139,15 +143,19 @@ export default function ArticleModal({
           {/* Header Meta */}
           <div className="space-y-4 border-b border-[var(--border-color)] pb-8">
             <div className="flex flex-wrap items-center gap-4 text-xs font-telemetry text-[var(--text-secondary)]">
-              <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
-                <MapPin className="w-3.5 h-3.5" />
-                {post.location}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-                {post.publishedAt}
-              </span>
+              {post.location && (
+                <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {post.location}
+                </span>
+              )}
+              {post.location && post.publishedAt && <span>•</span>}
+              {post.publishedAt && (
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                  {post.publishedAt}
+                </span>
+              )}
             </div>
 
             <h1 className="font-editorial text-3xl sm:text-5xl lg:text-6xl font-medium text-[var(--text-primary)] leading-[1.08]">
@@ -224,7 +232,7 @@ export default function ArticleModal({
                   <figure
                     key={block.id || index}
                     onClick={() =>
-                      handleOpenImage(block.imageUrl, block.caption, block.exifNote)
+                      handleOpenImage(block.imageUrl, block.caption, block.exifNote, block)
                     }
                     className="group my-10 rounded-2xl overflow-hidden bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all cursor-pointer"
                     title="Klicken, um das Bild in der Großansicht zu öffnen"

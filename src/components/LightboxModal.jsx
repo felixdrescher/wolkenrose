@@ -10,6 +10,18 @@ import {
   Compass
 } from 'lucide-react';
 
+function hasAnyExif(exif) {
+  if (!exif) return false;
+  return Boolean(
+    exif.camera ||
+      exif.lens ||
+      exif.focalLength ||
+      exif.aperture ||
+      exif.shutterSpeed ||
+      exif.iso
+  );
+}
+
 export default function LightboxModal({
   photo,
   photos,
@@ -41,6 +53,14 @@ export default function LightboxModal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [photo, photos]);
+
+  const showExifSection = hasAnyExif(photo.exif);
+  const hasOpticalParams = Boolean(
+    photo.exif?.focalLength ||
+      photo.exif?.aperture ||
+      photo.exif?.shutterSpeed ||
+      photo.exif?.iso
+  );
 
   return (
     <div
@@ -166,55 +186,63 @@ export default function LightboxModal({
             </div>
           )}
 
-          {/* Optical & Camera EXIF Telemetry */}
-          {photo.exif && (
+          {/* Optical & Camera EXIF Telemetry (only shown when present) */}
+          {showExifSection && (
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
                 <Camera className="w-4 h-4 text-[var(--accent-primary)]" />
                 <span>Technische EXIF-Daten</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 font-telemetry text-xs">
-                <div className="bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
-                  <span className="block text-[10px] text-[var(--text-secondary)]">KAMERAGEHÄUSE</span>
-                  <span className="text-[var(--text-primary)] font-medium mt-0.5 block">
-                    {photo.exif?.camera || 'Hasselblad X2D 100C'}
-                  </span>
+              {(photo.exif?.camera || photo.exif?.lens) && (
+                <div className="grid grid-cols-2 gap-2.5 font-telemetry text-xs">
+                  {photo.exif?.camera && (
+                    <div className="bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
+                      <span className="block text-[10px] text-[var(--text-secondary)]">KAMERAGEHÄUSE</span>
+                      <span className="text-[var(--text-primary)] font-medium mt-0.5 block">
+                        {photo.exif.camera}
+                      </span>
+                    </div>
+                  )}
+                  {photo.exif?.lens && (
+                    <div className="bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
+                      <span className="block text-[10px] text-[var(--text-secondary)]">OBJEKTIV</span>
+                      <span className="text-[var(--text-primary)] font-medium mt-0.5 block">
+                        {photo.exif.lens}
+                      </span>
+                    </div>
+                  )}
                 </div>
-                <div className="bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
-                  <span className="block text-[10px] text-[var(--text-secondary)]">OBJEKTIV</span>
-                  <span className="text-[var(--text-primary)] font-medium mt-0.5 block">
-                    {photo.exif?.lens || 'XCD 2,5/55V'}
-                  </span>
-                </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-4 gap-2 text-center font-telemetry text-xs bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
-                <div>
-                  <span className="block text-[10px] text-[var(--text-secondary)]">BRENNW.</span>
-                  <span className="text-[var(--accent-primary)] font-semibold">
-                    {photo.exif?.focalLength || '55mm'}
-                  </span>
+              {hasOpticalParams && (
+                <div className="grid grid-cols-4 gap-2 text-center font-telemetry text-xs bg-[var(--bg-primary)] p-3 rounded-xl border border-[var(--border-color)]">
+                  <div>
+                    <span className="block text-[10px] text-[var(--text-secondary)]">BRENNW.</span>
+                    <span className="text-[var(--accent-primary)] font-semibold">
+                      {photo.exif?.focalLength || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-[var(--text-secondary)]">BLENDE</span>
+                    <span className="text-[var(--accent-primary)] font-semibold">
+                      {photo.exif?.aperture || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-[var(--text-secondary)]">BELICHTUNG</span>
+                    <span className="text-[var(--accent-primary)] font-semibold">
+                      {photo.exif?.shutterSpeed || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-[var(--text-secondary)]">ISO</span>
+                    <span className="text-[var(--accent-primary)] font-semibold">
+                      {photo.exif?.iso || '—'}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-[10px] text-[var(--text-secondary)]">BLENDE</span>
-                  <span className="text-[var(--accent-primary)] font-semibold">
-                    {photo.exif?.aperture || 'f/8'}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-[var(--text-secondary)]">BELICHTUNG</span>
-                  <span className="text-[var(--accent-primary)] font-semibold">
-                    {photo.exif?.shutterSpeed || '1/125s'}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[10px] text-[var(--text-secondary)]">ISO</span>
-                  <span className="text-[var(--accent-primary)] font-semibold">
-                    {photo.exif?.iso || '100'}
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>

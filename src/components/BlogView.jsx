@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   MapPin,
   ArrowUpRight,
@@ -8,23 +8,25 @@ import {
 
 export default function BlogView({
   posts,
+  blogCategories = [],
   onSelectPost
 }) {
   const [selectedCategory, setSelectedCategory] = useState('Alle');
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = useMemo(() => {
-    const set = new Set([
-      'Reisetagebuch',
-      'Hinter der Kamera',
-      'Ausrüstung & Technik',
-      'Naturschutz'
-    ]);
+    const set = new Set(blogCategories);
     posts.forEach((p) => {
       if (p.category) set.add(p.category);
     });
     return ['Alle', ...Array.from(set)];
-  }, [posts]);
+  }, [blogCategories, posts]);
+
+  useEffect(() => {
+    if (!categories.includes(selectedCategory)) {
+      setSelectedCategory('Alle');
+    }
+  }, [categories, selectedCategory]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -150,9 +152,11 @@ export default function BlogView({
                   >
                     Titelgeschichte
                   </span>
-                  <span className="px-3 py-1 rounded-full text-xs font-telemetry bg-black/75 backdrop-blur-md text-white">
-                    {leadPost.category}
-                  </span>
+                  {leadPost.category && (
+                    <span className="px-3 py-1 rounded-full text-xs font-telemetry bg-black/75 backdrop-blur-md text-white">
+                      {leadPost.category}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -166,14 +170,18 @@ export default function BlogView({
                     {leadPost.title}
                   </h2>
 
-                  <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-                    {leadPost.subtitle}
-                  </p>
+                  {leadPost.subtitle && (
+                    <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                      {leadPost.subtitle}
+                    </p>
+                  )}
 
-                  <div className="flex items-center gap-1.5 text-xs text-[var(--accent-secondary)]">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>{leadPost.location}</span>
-                  </div>
+                  {leadPost.location && (
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--accent-secondary)]">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{leadPost.location}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-6 border-t border-[var(--border-color)] space-y-4">
@@ -220,9 +228,13 @@ export default function BlogView({
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                       <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                        <span className="px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-white border border-white/10">
-                          {post.category}
-                        </span>
+                        {post.category ? (
+                          <span className="px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-white border border-white/10">
+                            {post.category}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
                         <span className="px-2.5 py-1 rounded-full text-[11px] font-telemetry bg-black/70 backdrop-blur-md text-[var(--accent-primary)]">
                           {imageBlockCount + 1} Fotos im Beitrag
                         </span>
@@ -233,17 +245,23 @@ export default function BlogView({
                       <div className="space-y-3">
                         <div className="flex items-center gap-3 text-xs font-telemetry text-[var(--text-secondary)]">
                           <span>{post.publishedAt}</span>
-                          <span>•</span>
-                          <span className="truncate">{post.location}</span>
+                          {post.location && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate">{post.location}</span>
+                            </>
+                          )}
                         </div>
 
                         <h3 className="font-editorial text-2xl sm:text-3xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors leading-snug">
                           {post.title}
                         </h3>
 
-                        <p className="text-sm text-[var(--text-secondary)] line-clamp-3 leading-relaxed">
-                          {post.subtitle}
-                        </p>
+                        {post.subtitle && (
+                          <p className="text-sm text-[var(--text-secondary)] line-clamp-3 leading-relaxed">
+                            {post.subtitle}
+                          </p>
+                        )}
                       </div>
 
                       <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between">
