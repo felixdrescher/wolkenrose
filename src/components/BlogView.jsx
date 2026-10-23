@@ -1,10 +1,30 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   MapPin,
   ArrowUpRight,
   Search,
-  Tag
+  Tag,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+
+const POSTS_PER_SLIDE = 5;
+
+function buildPageNumbers(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  const pages = [1];
+  if (currentPage > 3) pages.push('...');
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  if (currentPage < totalPages - 2) pages.push('...');
+  pages.push(totalPages);
+  return pages;
+}
 
 export default function BlogView({
   posts,
@@ -13,6 +33,8 @@ export default function BlogView({
 }) {
   const [selectedCategory, setSelectedCategory] = useState('Alle');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const blogTopRef = useRef(null);
 
   const categories = useMemo(() => {
     const set = new Set(blogCategories);
@@ -27,6 +49,11 @@ export default function BlogView({
       setSelectedCategory('Alle');
     }
   }, [categories, selectedCategory]);
+
+  // Reset to slide 1 when filter or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -48,11 +75,28 @@ export default function BlogView({
     });
   }, [posts, selectedCategory, searchQuery]);
 
-  const leadPost = filteredPosts[0];
-  const remainingPosts = filteredPosts.slice(1);
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_SLIDE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * POSTS_PER_SLIDE;
+  const paginatedPosts = filteredPosts.slice(startIndex, startIndex + POSTS_PER_SLIDE);
+
+  const leadPost = safePage === 1 ? paginatedPosts[0] : null;
+  const gridPosts = safePage === 1 ? paginatedPosts.slice(1) : paginatedPosts;
+
+  const handleGoToPage = (page) => {
+    const target = Math.max(1, Math.min(totalPages, page));
+    setCurrentPage(target);
+    if (blogTopRef.current) {
+      blogTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const pageNumbers = buildPageNumbers(safePage, totalPages);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+    <div ref={blogTopRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[var(--border-color)] pb-8">
         <div className="space-y-3">
@@ -133,6 +177,42 @@ export default function BlogView({
         </div>
       ) : (
         <div className="space-y-12">
+          {/* Top Slide Status Bar */}
+          {filteredPosts.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-telemetry text-[var(--text-secondary)]">
+              <span>
+                Zeige Blogbeiträge {startIndex + 1}–{Math.min(startIndex + POSTS_PER_SLIDE, filteredPosts.length)} von {filteredPosts.length}
+              </span>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <span>
+                    Slide {safePage} / {totalPages}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleGoToPage(safePage - 1)}
+                      disabled={safePage <= 1}
+                      className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] disabled:opacity-35 hover:border-[var(--accent-primary)] transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Vorheriger Slide"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleGoToPage(safePage + 1)}
+                      disabled={safePage >= totalPages}
+                      className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] disabled:opacity-35 hover:border-[var(--accent-primary)] transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Nächster Slide"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Featured Cover Story */}
           {leadPost && (
             <article
@@ -208,9 +288,9 @@ export default function BlogView({
           )}
 
           {/* Grid of Additional Journal Posts */}
-          {remainingPosts.length > 0 && (
+          {gridPosts.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {remainingPosts.map((post) => {
+              {gridPosts.map((post) => {
                 const imageBlockCount = (post.blocks || []).filter(
                   (b) => b.type === 'image'
                 ).length;
@@ -283,6 +363,76 @@ export default function BlogView({
                   </article>
                 );
               })}
+            </div>
+          )}
+
+          {/* Bottom Multi-Slide Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pt-6 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="font-telemetry text-xs text-[var(--text-secondary)]">
+                Slide {safePage} von {totalPages} ({filteredPosts.length} Blogbeiträge insgesamt)
+              </span>
+
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGoToPage(safePage - 1)}
+                  disabled={safePage <= 1}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] disabled:opacity-35 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Zurück</span>
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {pageNumbers.map((page, idx) =>
+                    page === '...' ? (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-2 text-xs font-telemetry text-[var(--text-secondary)]"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => handleGoToPage(page)}
+                        style={
+                          safePage === page
+                            ? {
+                                backgroundColor: 'var(--accent-primary)',
+                                borderColor: 'var(--accent-primary)',
+                                color: '#0B0E0C'
+                              }
+                            : {
+                                backgroundColor: 'var(--bg-secondary)',
+                                borderColor: 'var(--border-color)',
+                                color: 'var(--text-primary)'
+                              }
+                        }
+                        className={`w-9 h-9 rounded-full text-xs font-telemetry border transition-all cursor-pointer flex items-center justify-center ${
+                          safePage === page
+                            ? 'font-bold shadow-md'
+                            : 'hover:border-[var(--accent-primary)]'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleGoToPage(safePage + 1)}
+                  disabled={safePage >= totalPages}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] disabled:opacity-35 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <span>Weiter</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>

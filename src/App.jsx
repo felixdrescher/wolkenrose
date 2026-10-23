@@ -20,6 +20,43 @@ function hexToRgba(hex, alpha = 0.85) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// Convert absolute '/uploads/...' paths to relative './uploads/...' so images work both locally and on GitHub Pages (/wolkenrose/)
+function normalizeUploadUrl(url) {
+  if (typeof url === 'string' && url.startsWith('/uploads/')) {
+    return `.${url}`;
+  }
+  return url;
+}
+
+function normalizeStateData(data) {
+  if (!data || typeof data !== 'object') return data;
+  const copy = { ...data };
+  if (copy.profile && copy.profile.portraitImage) {
+    copy.profile = {
+      ...copy.profile,
+      portraitImage: normalizeUploadUrl(copy.profile.portraitImage)
+    };
+  }
+  if (Array.isArray(copy.photos)) {
+    copy.photos = copy.photos.map((p) => ({
+      ...p,
+      imageUrl: normalizeUploadUrl(p.imageUrl)
+    }));
+  }
+  if (Array.isArray(copy.posts)) {
+    copy.posts = copy.posts.map((post) => ({
+      ...post,
+      coverImage: normalizeUploadUrl(post.coverImage),
+      blocks: Array.isArray(post.blocks)
+        ? post.blocks.map((b) =>
+            b.imageUrl ? { ...b, imageUrl: normalizeUploadUrl(b.imageUrl) } : b
+          )
+        : []
+    }));
+  }
+  return copy;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [studioSubTab, setStudioSubTab] = useState('upload-photo');
@@ -49,35 +86,47 @@ export default function App() {
   const [editingPost, setEditingPost] = useState(null);
   const studioLeaveGuardRef = useRef(null);
 
-  // Load state from backend API
+  // Load state from backend API (or fallback to static ./data/db.json on GitHub Pages)
   useEffect(() => {
-    fetch('/api/state')
+    const applyLoadedData = (rawData) => {
+      const data = normalizeStateData(rawData);
+      if (Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      }
+      if (Array.isArray(data.blogCategories)) {
+        setBlogCategories(data.blogCategories);
+      }
+      if (data.theme) {
+        setTheme({ ...initialData.theme, ...data.theme });
+        if (!localStorage.getItem('wolkenrose_color_mode') && data.theme.defaultMode) {
+          setColorMode(data.theme.defaultMode);
+        }
+      }
+      if (Array.isArray(data.customThemes) && data.customThemes.length > 0) {
+        setCustomThemes(data.customThemes);
+      }
+      if (data.profile) setProfile({ ...initialData.profile, ...data.profile });
+      if (Array.isArray(data.photos)) setPhotos(data.photos);
+      if (Array.isArray(data.posts)) setPosts(data.posts);
+    };
+
+    fetch('./api/state')
       .then((res) => {
         if (!res.ok) throw new Error('API unavailable');
         return res.json();
       })
-      .then((data) => {
-        if (Array.isArray(data.categories)) {
-          setCategories(data.categories);
-        }
-        if (Array.isArray(data.blogCategories)) {
-          setBlogCategories(data.blogCategories);
-        }
-        if (data.theme) {
-          setTheme({ ...initialData.theme, ...data.theme });
-          if (!localStorage.getItem('wolkenrose_color_mode') && data.theme.defaultMode) {
-            setColorMode(data.theme.defaultMode);
-          }
-        }
-        if (Array.isArray(data.customThemes) && data.customThemes.length > 0) {
-          setCustomThemes(data.customThemes);
-        }
-        if (data.profile) setProfile({ ...initialData.profile, ...data.profile });
-        if (Array.isArray(data.photos)) setPhotos(data.photos);
-        if (Array.isArray(data.posts)) setPosts(data.posts);
-      })
+      .then(applyLoadedData)
       .catch(() => {
-        // Fallback to seed data if static
+        // Fallback to static ./data/db.json (e.g. on GitHub Pages)
+        fetch('./data/db.json')
+          .then((res) => {
+            if (!res.ok) throw new Error('Static db.json unavailable');
+            return res.json();
+          })
+          .then(applyLoadedData)
+          .catch(() => {
+            // Fallback to seed data if both fail
+          });
       });
   }, []);
 

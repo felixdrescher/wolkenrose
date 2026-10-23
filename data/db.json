@@ -1,0 +1,393 @@
+{
+  "theme": {
+    "activeThemeId": "theme-2",
+    "defaultMode": "light",
+    "accentPrimary": "#6495B8",
+    "accentSecondary": "#7A939E",
+    "darkBgPrimary": "#0D1117",
+    "darkBgSecondary": "#151B23",
+    "darkTextPrimary": "#ECF0F5",
+    "darkTextSecondary": "#8B98A9",
+    "lightBgPrimary": "#F3F5F8",
+    "lightBgSecondary": "#FFFFFF",
+    "lightTextPrimary": "#141A21",
+    "lightTextSecondary": "#526071",
+    "fontSerif": "Outfit",
+    "fontSans": "Inter",
+    "fontMono": "IBM Plex Mono"
+  },
+  "customThemes": [
+    {
+      "id": "theme-1",
+      "name": "Waldgrün & Ockergold",
+      "description": "standardmäßig dunkle Theme mit warmen Farben in serifen-Font für einen schlichten und edlen Look",
+      "theme": {
+        "defaultMode": "light",
+        "accentPrimary": "#D4A359",
+        "accentSecondary": "#7A9A82",
+        "darkBgPrimary": "#141210",
+        "darkBgSecondary": "#1E1B18",
+        "darkTextPrimary": "#F4F1EA",
+        "darkTextSecondary": "#9CA39E",
+        "lightBgPrimary": "#F6F3EC",
+        "lightBgSecondary": "#FFFFFF",
+        "lightTextPrimary": "#181D1A",
+        "lightTextSecondary": "#5A655E",
+        "fontSerif": "Spectral",
+        "fontSans": "Rubik",
+        "fontMono": "JetBrains Mono"
+      }
+    },
+    {
+      "id": "theme-2",
+      "name": "Schiefergrau & Stahlblau",
+      "description": "standardmäßig helle Theme mit eher kühlen Farben und serifenloser Font für einen klassischen und modernen Look",
+      "theme": {
+        "defaultMode": "light",
+        "accentPrimary": "#6495B8",
+        "accentSecondary": "#7A939E",
+        "darkBgPrimary": "#0D1117",
+        "darkBgSecondary": "#151B23",
+        "darkTextPrimary": "#ECF0F5",
+        "darkTextSecondary": "#8B98A9",
+        "lightBgPrimary": "#F3F5F8",
+        "lightBgSecondary": "#FFFFFF",
+        "lightTextPrimary": "#141A21",
+        "lightTextSecondary": "#526071",
+        "fontSerif": "Outfit",
+        "fontSans": "Inter",
+        "fontMono": "IBM Plex Mono"
+      }
+    },
+    {
+      "id": "theme-3",
+      "name": "Terrakotta & Oliv",
+      "description": "standardmäßig helle Theme mit warmem Hintergrund und erdigen Terrakotta- und Olivtönen sowie serifen-Font",
+      "theme": {
+        "defaultMode": "light",
+        "accentPrimary": "#B86B43",
+        "accentSecondary": "#5A6E53",
+        "darkBgPrimary": "#0B0E0C",
+        "darkBgSecondary": "#121614",
+        "darkTextPrimary": "#F2ECE4",
+        "darkTextSecondary": "#A39B90",
+        "lightBgPrimary": "#F4EFE6",
+        "lightBgSecondary": "#FAF7F2",
+        "lightTextPrimary": "#1C1917",
+        "lightTextSecondary": "#5C554E",
+        "fontSerif": "Libre Baskerville",
+        "fontSans": "Source Sans 3",
+        "fontMono": "Space Mono"
+      }
+    },
+    {
+      "id": "theme-4",
+      "name": "Monochrom Galerie",
+      "description": "standardmäßig dunkle Theme in Dunkelkammer-Schwarz und mattem Silbergrau",
+      "theme": {
+        "defaultMode": "dark",
+        "accentPrimary": "#B0B8C0",
+        "accentSecondary": "#7D858C",
+        "darkBgPrimary": "#0A0A0B",
+        "darkBgSecondary": "#141416",
+        "darkTextPrimary": "#F2F2F3",
+        "darkTextSecondary": "#96969C",
+        "lightBgPrimary": "#F5F5F6",
+        "lightBgSecondary": "#FFFFFF",
+        "lightTextPrimary": "#121214",
+        "lightTextSecondary": "#5A5A62",
+        "fontSerif": "Space Grotesk",
+        "fontSans": "DM Sans",
+        "fontMono": "Roboto Mono"
+      }
+    }
+  ],
+  "profile": {
+    "brand": "Wolkenrose - Fotografie",
+    "name": "Petra Schemmel",
+    "tagline": "Naturfotografie und meer",
+    "bio": "Unter dem Namen ‚Wolkenrose‘ widme ich mich nun seit schon 15 Jahren vor allem der Naturfotografie, aber auch anderen Motive wie Lost Places, Industrielle Ästhetik oder Street Art sind Motive, die ich immer häufiger fotografiere. ",
+    "location": "Schweinfurt, Bayern",
+    "portraitImage": "/uploads/1792696920590-img_9237.JPG",
+    "equipmentTitle": "Kameraausrüstung & Objektive",
+    "equipmentIntro": "alles von Canon find ich gut",
+    "contactIntro": "Du hast eine Frage zu meinen Bildern, einer Ausstellung oder möchtest dich über Fotografie austauschen? Ich freue mich über deine Nachricht oder deinen Besuch auf meinen Social-Media-Kanälen.",
+    "email": "felixdrescher@outlook.de",
+    "phone": "",
+    "instagram": "@wolkenrose.petraschemmel",
+    "socials": {
+      "instagramUrl": "https://www.instagram.com/wolkenrose/",
+      "instagramHandle": "@wolkenrose",
+      "blueskyUrl": "",
+      "blueskyHandle": "",
+      "custom": []
+    },
+    "equipment": [
+      "Canon EOS R6 Mark III"
+    ],
+    "stats": {
+      "expeditions": 48,
+      "countries": 19,
+      "publications": 24,
+      "conservationGrants": 9
+    }
+  },
+  "photos": [
+    {
+      "id": "photo-1792753005265",
+      "title": "bunte Häuserreihe",
+      "category": "Gebäude & Architektur",
+      "location": "Innsbruck, Österreich",
+      "dateTaken": "2026-05-20",
+      "featured": true,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792752956411-dscf1552.JPG",
+      "story": "die Berge sind leider nicht ganz mit drauf",
+      "exif": {
+        "camera": "FUJIFILM X-S10",
+        "lens": "XF35mmF2 R WR",
+        "focalLength": "35mm",
+        "aperture": "f/2.8",
+        "shutterSpeed": "1/4000s",
+        "iso": "320"
+      }
+    },
+    {
+      "id": "photo-1792752326417",
+      "title": "Kunsthalle Laesoe",
+      "category": "Kunst",
+      "location": "Osterbue, Laesoe, Dänemark",
+      "dateTaken": "2023-09-20",
+      "featured": false,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792752275645-img_9207.JPG",
+      "story": "eine sehr kleine Kunsthalle mit wechselnden Ausstellung zu moderner bildender Kunst",
+      "exif": {
+        "camera": "Canon EOS 60D",
+        "lens": "EF-S60mm f/2.8 Macro USM",
+        "focalLength": "60mm",
+        "aperture": "f/10",
+        "shutterSpeed": "1/250s",
+        "iso": "100"
+      }
+    },
+    {
+      "id": "photo-1792752131632",
+      "title": "Salzsiederei",
+      "category": "Sonstiges",
+      "location": "Laesoe, Dänemark",
+      "dateTaken": "2021-06-26",
+      "featured": false,
+      "landingSelected": false,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792752059625-dsc02345.JPG",
+      "story": "hier wird das Salz aus Meerwasser seit hunderten von Jahren noch auf traditionelle Weise gewonnen",
+      "exif": {
+        "camera": "SONY ILCE-6000",
+        "lens": "E PZ 16-50mm F3.5-5.6 OSS",
+        "focalLength": "16mm",
+        "aperture": "f/3.5",
+        "shutterSpeed": "1/160s",
+        "iso": "2500"
+      }
+    },
+    {
+      "id": "photo-1792751679050",
+      "title": "Hafen von Osterbue",
+      "category": "Strand & Meer",
+      "location": "Osterbue, Laesoe, Dänemark",
+      "dateTaken": "2023-09-20",
+      "featured": false,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792751625851-img_9196.JPG",
+      "story": "viele Fischer legen hier mit ihren kleinen Booten an",
+      "exif": {
+        "camera": "Canon EOS 60D",
+        "lens": "EF-S60mm f/2.8 Macro USM",
+        "focalLength": "60mm",
+        "aperture": "f/16",
+        "shutterSpeed": "1/80s",
+        "iso": "125"
+      }
+    },
+    {
+      "id": "photo-1792751586501",
+      "title": "Lila Fahrrad am Strand",
+      "category": "Strand & Meer",
+      "location": "Westeroe, Laesoe, Dänemark",
+      "dateTaken": "2023-09-16",
+      "featured": false,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792751547811-img_9090.JPG",
+      "story": "lila ist eine schöne Farbe",
+      "exif": {
+        "camera": "Canon EOS 60D",
+        "lens": "EF-S60mm f/2.8 Macro USM",
+        "focalLength": "60mm",
+        "aperture": "f/2.8",
+        "shutterSpeed": "1/1250s",
+        "iso": "100"
+      }
+    },
+    {
+      "id": "photo-1792751478399",
+      "title": "Dünen bei Sonnenuntergang",
+      "category": "Strand & Meer",
+      "location": "Westeroe, Laesoe, Dänemark",
+      "dateTaken": "2023-09-15",
+      "featured": false,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792751423553-img_8923.JPG",
+      "story": "ich liebe die Nordsee",
+      "exif": {
+        "camera": "Canon EOS 60D",
+        "lens": "EF-S60mm f/2.8 Macro USM",
+        "focalLength": "60mm",
+        "aperture": "f/4.5",
+        "shutterSpeed": "1/100s",
+        "iso": "500"
+      }
+    },
+    {
+      "id": "photo-1792687915134",
+      "title": "Haus am Strand",
+      "category": "Strand & Meer",
+      "location": "Westeroe, Laesoe (Dänemark)",
+      "dateTaken": "2023-09-15",
+      "featured": false,
+      "landingSelected": true,
+      "aspectRatio": "landscape",
+      "imageUrl": "/uploads/1792686439301-img_8920.JPG",
+      "story": "Das Haus steht direkt am Meer und ist sogar bewohnt.",
+      "exif": {
+        "camera": "Canon EOS 60D",
+        "lens": "EF-S60mm f/2.8 Macro USM",
+        "focalLength": "60mm",
+        "aperture": "f/3.2",
+        "shutterSpeed": "1/100s",
+        "iso": "640"
+      }
+    }
+  ],
+  "posts": [
+    {
+      "id": "post-1792753861771",
+      "title": "Berge von Innsbruck",
+      "subtitle": "Ein Tag, eine Wanderung",
+      "category": "Kurzausflüge",
+      "location": "Innsbruck, Österreich",
+      "publishedAt": "2026-05-18",
+      "featured": true,
+      "coverImage": "/uploads/1792753458014-dscf1368.JPG",
+      "tags": [
+        "Berge",
+        "Schnee",
+        "Wandern"
+      ],
+      "blocks": [
+        {
+          "id": "block-1792753323091-1",
+          "type": "paragraph",
+          "content": "Zum Gipfel ist es ein weiter Weg, aber man wird die ganze Zeit über mit Ausblicken belohnt"
+        },
+        {
+          "id": "block-1792753323091-2",
+          "type": "image",
+          "imageUrl": "/uploads/1792753521553-dscf1302.JPG",
+          "caption": "Beginn unserer Wanderung",
+          "exifNote": "FUJIFILM X-S10 · XF35mmF2 R WR · 35mm · f/2 · 1/2500s · ISO 320 · 2026-05-17 (19:56 Uhr)",
+          "exif": {
+            "camera": "FUJIFILM X-S10",
+            "lens": "XF35mmF2 R WR",
+            "focalLength": "35mm",
+            "aperture": "f/2",
+            "shutterSpeed": "1/2500s",
+            "iso": "320"
+          },
+          "location": "",
+          "dateTaken": "2026-05-17"
+        },
+        {
+          "id": "block-1792753657585-zdmn",
+          "type": "image",
+          "imageUrl": "/uploads/1792753671631-dscf1456.JPG",
+          "caption": "kleiner Bach in Axams",
+          "exifNote": "FUJIFILM X-S10 · XF35mmF2 R WR · 35mm · f/4.5 · 1/550s · ISO 160 · 2026-05-19 (11:29 Uhr)",
+          "exif": {
+            "camera": "FUJIFILM X-S10",
+            "lens": "XF35mmF2 R WR",
+            "focalLength": "35mm",
+            "aperture": "f/4.5",
+            "shutterSpeed": "1/550s",
+            "iso": "160"
+          },
+          "location": "",
+          "dateTaken": "2026-05-19"
+        },
+        {
+          "id": "block-1792753697209-mgqv",
+          "type": "paragraph",
+          "content": "je nachdem mit wie vielen Schichten man los gelaufen ist, kann es bei den ganzen Höhenmetern schon auch mal etwas wärmer werden, und man muss sich einer Schichte entledigen"
+        },
+        {
+          "id": "block-1792753704000-71qm",
+          "type": "image",
+          "imageUrl": "/uploads/1792753738873-dscf1690.JPG",
+          "caption": "",
+          "exifNote": "FUJIFILM X-S10 · XF16-80mmF4 R OIS WR · 74mm · f/4 · 1/2000s · ISO 200 · 2026-05-21 (15:13 Uhr)",
+          "exif": {
+            "camera": "FUJIFILM X-S10",
+            "lens": "XF16-80mmF4 R OIS WR",
+            "focalLength": "74mm",
+            "aperture": "f/4",
+            "shutterSpeed": "1/2000s",
+            "iso": "200"
+          },
+          "location": "",
+          "dateTaken": "2026-05-21"
+        },
+        {
+          "id": "block-1792753812798-qbsv",
+          "type": "heading",
+          "content": "Abstieg nach Innsbruck"
+        },
+        {
+          "id": "block-1792753829117-vjvi",
+          "type": "image",
+          "imageUrl": "/uploads/1792752956411-dscf1552.JPG",
+          "caption": "bunte Häuserreihe — Innsbruck, Österreich",
+          "exifNote": "FUJIFILM X-S10 · 35mm · f/2.8 · 1/4000s · Innsbruck, Österreich",
+          "exif": {
+            "camera": "FUJIFILM X-S10",
+            "lens": "XF35mmF2 R WR",
+            "focalLength": "35mm",
+            "aperture": "f/2.8",
+            "shutterSpeed": "1/4000s",
+            "iso": "320"
+          },
+          "location": "Innsbruck, Österreich",
+          "dateTaken": "2026-05-20"
+        },
+        {
+          "id": "block-1792753836581-d66d",
+          "type": "paragraph",
+          "content": "Innsbruck ist bekannt für diese bunte Häuserreihe direkt am Wasser und umrandet von hohen Bergen - ein toller Anblick"
+        }
+      ]
+    }
+  ],
+  "categories": [
+    "Strand & Meer",
+    "Sonstiges",
+    "Kunst",
+    "Gebäude & Architektur"
+  ],
+  "blogCategories": [
+    "Kurzausflüge"
+  ]
+}

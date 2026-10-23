@@ -1,11 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Search,
   MapPin,
   LayoutGrid,
   Rows,
   SlidersHorizontal,
-  Maximize2
+  Maximize2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 function formatOpticalSummary(exif) {
@@ -13,6 +15,22 @@ function formatOpticalSummary(exif) {
   return [exif.focalLength, exif.aperture, exif.shutterSpeed]
     .filter(Boolean)
     .join(' · ');
+}
+
+function buildPageNumbers(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  const pages = [1];
+  if (currentPage > 3) pages.push('...');
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  if (currentPage < totalPages - 2) pages.push('...');
+  pages.push(totalPages);
+  return pages;
 }
 
 export default function GalleryView({
@@ -24,6 +42,10 @@ export default function GalleryView({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'cinematic'
+  const [currentPage, setCurrentPage] = useState(1);
+  const galleryTopRef = useRef(null);
+
+  const photosPerPage = viewMode === 'grid' ? 6 : 3;
 
   const categories = useMemo(() => {
     const set = new Set(managedCategories);
@@ -38,6 +60,11 @@ export default function GalleryView({
       setSelectedCategory('Alle');
     }
   }, [categories, selectedCategory]);
+
+  // Reset to slide 1 whenever filter, search, sort or view mode changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchQuery, sortBy, viewMode]);
 
   const filteredPhotos = useMemo(() => {
     return photos
@@ -63,8 +90,25 @@ export default function GalleryView({
       });
   }, [photos, selectedCategory, searchQuery, sortBy]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredPhotos.length / photosPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * photosPerPage;
+  const paginatedPhotos = filteredPhotos.slice(startIndex, startIndex + photosPerPage);
+
+  const handleGoToPage = (page) => {
+    const target = Math.max(1, Math.min(totalPages, page));
+    setCurrentPage(target);
+    if (galleryTopRef.current) {
+      galleryTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const pageNumbers = buildPageNumbers(safePage, totalPages);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+    <div ref={galleryTopRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
       {/* Gallery Header */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-[var(--border-color)] pb-8">
         <div className="space-y-3">
@@ -196,168 +240,279 @@ export default function GalleryView({
             </button>
           </div>
         </div>
-      ) : viewMode === 'grid' ? (
-        /* Grid Layout */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {filteredPhotos.map((photo) => {
-            const opticalStr = formatOpticalSummary(photo.exif);
-            const showExifBar = Boolean(photo.exif?.camera || opticalStr);
-
-            return (
-              <article
-                key={photo.id}
-                onClick={() => onSelectPhoto(photo)}
-                className="group rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all duration-500 cursor-pointer flex flex-col shadow-sm"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-black">
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 opacity-75 group-hover:opacity-55 transition-opacity" />
-
-                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                    {photo.category ? (
-                      <span className="px-3 py-1 rounded-full text-[11px] font-telemetry bg-black/65 backdrop-blur-md text-white border border-white/10">
-                        {photo.category}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                    {photo.featured && (
-                      <span
-                        style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
-                        className="px-2.5 py-1 rounded-full text-[10px] font-telemetry uppercase font-semibold"
-                      >
-                        Highlight
-                      </span>
-                    )}
+      ) : (
+        <div className="space-y-10">
+          {/* Top Slide Status Bar */}
+          {filteredPhotos.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-telemetry text-[var(--text-secondary)]">
+              <span>
+                Zeige Fotografien {startIndex + 1}–{Math.min(startIndex + photosPerPage, filteredPhotos.length)} von {filteredPhotos.length}
+              </span>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <span>
+                    Slide {safePage} / {totalPages}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleGoToPage(safePage - 1)}
+                      disabled={safePage <= 1}
+                      className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] disabled:opacity-35 hover:border-[var(--accent-primary)] transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Vorheriger Slide"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleGoToPage(safePage + 1)}
+                      disabled={safePage >= totalPages}
+                      className="p-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] disabled:opacity-35 hover:border-[var(--accent-primary)] transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      aria-label="Nächster Slide"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
 
-                  {/* Bottom EXIF Strip (optional) */}
-                  {showExifBar && (
-                    <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-telemetry text-white/95 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
-                      <span className="truncate max-w-[48%]">{photo.exif?.camera || ''}</span>
-                      {opticalStr && (
-                        <span className="text-[var(--accent-primary)] shrink-0">
-                          {opticalStr}
-                        </span>
+          {viewMode === 'grid' ? (
+            /* Grid Layout */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+              {paginatedPhotos.map((photo) => {
+                const opticalStr = formatOpticalSummary(photo.exif);
+                const showExifBar = Boolean(photo.exif?.camera || opticalStr);
+
+                return (
+                  <article
+                    key={photo.id}
+                    onClick={() => onSelectPhoto(photo)}
+                    className="group rounded-2xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all duration-500 cursor-pointer flex flex-col shadow-sm"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-black">
+                      <img
+                        src={photo.imageUrl}
+                        alt={photo.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25 opacity-75 group-hover:opacity-55 transition-opacity" />
+
+                      <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                        {photo.category ? (
+                          <span className="px-3 py-1 rounded-full text-[11px] font-telemetry bg-black/65 backdrop-blur-md text-white border border-white/10">
+                            {photo.category}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        {photo.featured && (
+                          <span
+                            style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                            className="px-2.5 py-1 rounded-full text-[10px] font-telemetry uppercase font-semibold"
+                          >
+                            Titelbild
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Bottom EXIF Strip (optional) */}
+                      {showExifBar && (
+                        <div className="absolute bottom-3 left-3.5 right-3.5 flex items-center justify-between text-[11px] font-telemetry text-white/95 bg-black/65 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
+                          <span className="truncate max-w-[48%]">{photo.exif?.camera || ''}</span>
+                          {opticalStr && (
+                            <span className="text-[var(--accent-primary)] shrink-0">
+                              {opticalStr}
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
 
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                  <div>
-                    {(photo.location || photo.dateTaken) && (
-                      <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-1">
-                        {photo.location ? (
-                          <span className="flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
-                            {photo.location}
-                          </span>
-                        ) : (
-                          <span />
-                        )}
-                        {photo.dateTaken && (
-                          <span className="font-telemetry text-[11px]">{photo.dateTaken}</span>
-                        )}
-                      </div>
-                    )}
-                    <h2 className="font-editorial text-2xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                      {photo.title}
-                    </h2>
-                  </div>
-                  {photo.story && (
-                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-                      {photo.story}
-                    </p>
-                  )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        /* Cinematic Large Plates Layout */
-        <div className="space-y-12">
-          {filteredPhotos.map((photo, index) => {
-            const opticalStr = formatOpticalSummary(photo.exif);
-            const showExifBoxes = Boolean(photo.exif?.camera || opticalStr);
-
-            return (
-              <article
-                key={photo.id}
-                onClick={() => onSelectPhoto(photo)}
-                className="group rounded-3xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all cursor-pointer grid grid-cols-1 lg:grid-cols-12 shadow-sm"
-              >
-                <div className="lg:col-span-8 relative aspect-[16/10] bg-black overflow-hidden">
-                  <img
-                    src={photo.imageUrl}
-                    alt={photo.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                  />
-                  <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-[var(--accent-primary)] border border-white/10">
-                    Werk #{String(index + 1).padStart(2, '0')}
-                    {photo.category ? ` · ${photo.category}` : ''}
-                  </span>
-                </div>
-
-                <div className="lg:col-span-4 p-7 sm:p-9 flex flex-col justify-between space-y-6">
-                  <div className="space-y-4">
-                    {(photo.location || photo.dateTaken) && (
-                      <div className="flex items-center justify-between text-xs font-telemetry text-[var(--text-secondary)]">
-                        {photo.location ? (
-                          <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {photo.location}
-                          </span>
-                        ) : (
-                          <span />
-                        )}
-                        {photo.dateTaken && <span>{photo.dateTaken}</span>}
-                      </div>
-                    )}
-                    <h2 className="font-editorial text-3xl sm:text-4xl text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                      {photo.title}
-                    </h2>
-                    {photo.story && (
-                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                        {photo.story}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-[var(--border-color)]">
-                    {showExifBoxes && (
-                      <div className="grid grid-cols-2 gap-2 font-telemetry text-xs">
-                        {photo.exif?.camera && (
-                          <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
-                            <span className="block text-[10px] text-[var(--text-secondary)]">KAMERA</span>
-                            <span className="text-[var(--text-primary)]">{photo.exif.camera}</span>
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                      <div>
+                        {(photo.location || photo.dateTaken) && (
+                          <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-1">
+                            {photo.location ? (
+                              <span className="flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
+                                {photo.location}
+                              </span>
+                            ) : (
+                              <span />
+                            )}
+                            {photo.dateTaken && (
+                              <span className="font-telemetry text-[11px]">{photo.dateTaken}</span>
+                            )}
                           </div>
                         )}
-                        {opticalStr && (
-                          <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
-                            <span className="block text-[10px] text-[var(--text-secondary)]">EINSTELLUNG</span>
-                            <span className="text-[var(--accent-primary)]">{opticalStr}</span>
-                          </div>
-                        )}
+                        <h2 className="font-editorial text-2xl font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                          {photo.title}
+                        </h2>
                       </div>
-                    )}
+                      {photo.story && (
+                        <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                          {photo.story}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            /* Cinematic Large Plates Layout */
+            <div className="space-y-12">
+              {paginatedPhotos.map((photo, index) => {
+                const globalIndex = startIndex + index;
+                const opticalStr = formatOpticalSummary(photo.exif);
+                const showExifBoxes = Boolean(photo.exif?.camera || opticalStr);
 
-                    <div className="flex items-center justify-end">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-primary)]">
-                        <Maximize2 className="w-3.5 h-3.5" /> Großansicht öffnen
+                return (
+                  <article
+                    key={photo.id}
+                    onClick={() => onSelectPhoto(photo)}
+                    className="group rounded-3xl overflow-hidden bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all cursor-pointer grid grid-cols-1 lg:grid-cols-12 shadow-sm"
+                  >
+                    <div className="lg:col-span-8 relative aspect-[16/10] bg-black overflow-hidden">
+                      <img
+                        src={photo.imageUrl}
+                        alt={photo.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                      />
+                      <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-telemetry bg-black/70 backdrop-blur-md text-[var(--accent-primary)] border border-white/10">
+                        Werk #{String(globalIndex + 1).padStart(2, '0')}
+                        {photo.category ? ` · ${photo.category}` : ''}
                       </span>
                     </div>
-                  </div>
+
+                    <div className="lg:col-span-4 p-7 sm:p-9 flex flex-col justify-between space-y-6">
+                      <div className="space-y-4">
+                        {(photo.location || photo.dateTaken) && (
+                          <div className="flex items-center justify-between text-xs font-telemetry text-[var(--text-secondary)]">
+                            {photo.location ? (
+                              <span className="flex items-center gap-1.5 text-[var(--accent-secondary)]">
+                                <MapPin className="w-3.5 h-3.5" />
+                                {photo.location}
+                              </span>
+                            ) : (
+                              <span />
+                            )}
+                            {photo.dateTaken && <span>{photo.dateTaken}</span>}
+                          </div>
+                        )}
+                        <h2 className="font-editorial text-3xl sm:text-4xl text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                          {photo.title}
+                        </h2>
+                        {photo.story && (
+                          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                            {photo.story}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t border-[var(--border-color)]">
+                        {showExifBoxes && (
+                          <div className="grid grid-cols-2 gap-2 font-telemetry text-xs">
+                            {photo.exif?.camera && (
+                              <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
+                                <span className="block text-[10px] text-[var(--text-secondary)]">KAMERA</span>
+                                <span className="text-[var(--text-primary)]">{photo.exif.camera}</span>
+                              </div>
+                            )}
+                            {opticalStr && (
+                              <div className="bg-[var(--surface-subtle)] p-2.5 rounded-lg border border-[var(--border-color)]">
+                                <span className="block text-[10px] text-[var(--text-secondary)]">EINSTELLUNG</span>
+                                <span className="text-[var(--accent-primary)]">{opticalStr}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-end">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-primary)]">
+                            <Maximize2 className="w-3.5 h-3.5" /> Großansicht öffnen
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Bottom Multi-Slide Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pt-6 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="font-telemetry text-xs text-[var(--text-secondary)]">
+                Slide {safePage} von {totalPages} ({filteredPhotos.length} Fotografien insgesamt)
+              </span>
+
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGoToPage(safePage - 1)}
+                  disabled={safePage <= 1}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] disabled:opacity-35 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Zurück</span>
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {pageNumbers.map((page, idx) =>
+                    page === '...' ? (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-2 text-xs font-telemetry text-[var(--text-secondary)]"
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => handleGoToPage(page)}
+                        style={
+                          safePage === page
+                            ? {
+                                backgroundColor: 'var(--accent-primary)',
+                                borderColor: 'var(--accent-primary)',
+                                color: '#0B0E0C'
+                              }
+                            : {
+                                backgroundColor: 'var(--bg-secondary)',
+                                borderColor: 'var(--border-color)',
+                                color: 'var(--text-primary)'
+                              }
+                        }
+                        className={`w-9 h-9 rounded-full text-xs font-telemetry border transition-all cursor-pointer flex items-center justify-center ${
+                          safePage === page
+                            ? 'font-bold shadow-md'
+                            : 'hover:border-[var(--accent-primary)]'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                 </div>
-              </article>
-            );
-          })}
+
+                <button
+                  type="button"
+                  onClick={() => handleGoToPage(safePage + 1)}
+                  disabled={safePage >= totalPages}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] disabled:opacity-35 transition-all cursor-pointer disabled:cursor-not-allowed"
+                >
+                  <span>Weiter</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
