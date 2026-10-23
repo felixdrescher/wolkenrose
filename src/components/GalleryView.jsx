@@ -90,7 +90,7 @@ export default function GalleryView({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nach Titel, Ort, Landschaft oder Kamera suchen..."
+              placeholder="Suchen..."
               className="w-full pl-11 pr-4 py-2.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/60 focus:outline-none focus:border-[var(--accent-primary)]"
             />
           </div>
@@ -178,10 +178,10 @@ export default function GalleryView({
       {filteredPhotos.length === 0 ? (
         <div className="rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-color)] p-16 text-center space-y-4">
           <p className="font-editorial text-3xl text-[var(--text-primary)]">
-            Keine Fotografien für diesen Filter gefunden
+            Keine Fotos für diesen Filter gefunden
           </p>
           <p className="text-sm text-[var(--text-secondary)]">
-            Setze den Filter zurück, um wieder mehr zu sehen.
+            Setze verwendete Filter zurück, um wieder mehr zu sehen.
           </p>
           <div className="flex justify-center gap-3 pt-2">
             <button

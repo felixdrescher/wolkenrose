@@ -3,10 +3,11 @@ import {
   Aperture,
   Image as ImageIcon,
   BookOpen,
-  Sparkles,
+  User,
   Sun,
   Moon,
-  Mail
+  Mail,
+  Settings
 } from 'lucide-react';
 
 export default function Navbar({
@@ -19,7 +20,7 @@ export default function Navbar({
   const navItems = [
     { id: 'gallery', label: 'Galerie', icon: ImageIcon },
     { id: 'journal', label: 'Blog', icon: BookOpen },
-    { id: 'about', label: 'Über mich', icon: Sparkles },
+    { id: 'about', label: 'Über mich', icon: User },
     { id: 'contact', label: 'Kontakt', icon: Mail }
   ];
 
@@ -141,7 +142,7 @@ export default function Navbar({
             }
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer border"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <Settings className="w-4 h-4" />
             <span>Adminbereich</span>
           </button>
         </div>

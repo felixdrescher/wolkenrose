@@ -63,7 +63,7 @@ export default function BlogView({
             Welcome to my blog!
           </h1>
           <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl">
-            Reiseberichte, Gedanken hinter der Kamera und fotografische Essays mit Texten und großformatigen Naturaufnahmen.
+            Alles rund um meine Fotografie, Reisen und Gedanken. Hier findest du meine neuesten Blogeinträge, Geschichten hinter den Bildern und vieles mehr. Viel Spaß beim Stöbern!
           </p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export default function BlogView({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Beiträge, Schlagworte oder Orte suchen..."
+            placeholder="Suchen..."
             className="w-full pl-11 pr-4 py-2 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)]/60 focus:outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
@@ -118,7 +118,7 @@ export default function BlogView({
             Keine Blogeinträge gefunden
           </p>
           <p className="text-sm text-[var(--text-secondary)]">
-            Setze den Filter zurück, um wieder mehr zu sehen
+            Setze verwendete Filter zurück, um wieder mehr zu sehen
           </p>
           <button
             onClick={() => {

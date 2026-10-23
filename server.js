@@ -43,6 +43,9 @@ function loadDb() {
     } else {
       parsed.theme = { ...initialData.theme, ...parsed.theme };
     }
+    if (!Array.isArray(parsed.customThemes) || parsed.customThemes.length === 0) {
+      parsed.customThemes = structuredClone(initialData.customThemes);
+    }
     if (!parsed.profile) {
       parsed.profile = structuredClone(initialData.profile);
     } else {
@@ -54,6 +57,16 @@ function loadDb() {
           ...(parsed.profile.socials || {})
         }
       };
+    }
+    if (Array.isArray(parsed.photos)) {
+      let seenFeatured = false;
+      parsed.photos = parsed.photos.map((photo) => {
+        if (photo.featured && !seenFeatured) {
+          seenFeatured = true;
+          return { ...photo, featured: true };
+        }
+        return { ...photo, featured: false };
+      });
     }
     return parsed;
   } catch (err) {
@@ -110,14 +123,13 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   });
 });
 
-// POST create a new gallery photo (EXIF, location, coordinates, dateTaken, story are all optional)
+// POST create a new gallery photo (EXIF, location, dateTaken, story are all optional)
 app.post('/api/photos', (req, res) => {
   const db = loadDb();
   const {
     title,
     category,
     location,
-    coordinates,
     dateTaken,
     featured,
     landingSelected,
@@ -136,7 +148,6 @@ app.post('/api/photos', (req, res) => {
     title: (title || 'Unbetitelte Aufnahme').trim(),
     category: category ? category.trim() : '',
     location: location ? location.trim() : '',
-    coordinates: coordinates ? coordinates.trim() : '',
     dateTaken: dateTaken ? dateTaken.trim() : '',
     featured: Boolean(featured),
     landingSelected: Boolean(landingSelected),
@@ -155,6 +166,10 @@ app.post('/api/photos', (req, res) => {
 
   if (newPhoto.category && !db.categories.includes(newPhoto.category)) {
     db.categories.push(newPhoto.category);
+  }
+
+  if (newPhoto.featured) {
+    db.photos = db.photos.map((p) => ({ ...p, featured: false }));
   }
 
   db.photos.unshift(newPhoto);
@@ -297,7 +312,13 @@ app.put('/api/photos/:id', (req, res) => {
       ...(req.body.exif || {})
     }
   };
-  db.photos[idx] = updated;
+  if (updated.featured) {
+    db.photos = db.photos.map((p, i) =>
+      i === idx ? updated : { ...p, featured: false }
+    );
+  } else {
+    db.photos[idx] = updated;
+  }
   saveDb(db);
   res.json(updated);
 });
@@ -409,15 +430,149 @@ app.put('/api/profile', (req, res) => {
   res.json(db.profile);
 });
 
-// PUT update global design, color & font theme
+// PUT update global design, color & font theme (and optionally sync active customTheme)
 app.put('/api/theme', (req, res) => {
   const db = loadDb();
+  const { customThemes, ...themePatch } = req.body || {};
+
   db.theme = {
     ...(db.theme || initialData.theme),
-    ...req.body
+    ...themePatch
   };
+
+  if (Array.isArray(customThemes)) {
+    db.customThemes = customThemes;
+  } else if (db.theme.activeThemeId && Array.isArray(db.customThemes)) {
+    const { activeThemeId, ...themeValues } = db.theme;
+    db.customThemes = db.customThemes.map((ct) =>
+      ct.id === activeThemeId
+        ? {
+            ...ct,
+            theme: { ...ct.theme, ...themeValues }
+          }
+        : ct
+    );
+  }
+
   saveDb(db);
-  res.json(db.theme);
+  res.json({ theme: db.theme, customThemes: db.customThemes });
+});
+
+// POST create a new custom theme
+app.post('/api/custom-themes', (req, res) => {
+  const db = loadDb();
+  const { name, description, theme: themeValues } = req.body || {};
+  const newId = `theme-${Date.now()}`;
+  const cleanTheme = {
+    ...(db.theme || initialData.theme),
+    ...(themeValues || {})
+  };
+  delete cleanTheme.activeThemeId;
+
+  const newCustomTheme = {
+    id: newId,
+    name: (name || 'Neues Custom Theme').trim(),
+    description: (description || '').trim(),
+    theme: cleanTheme
+  };
+
+  db.customThemes.push(newCustomTheme);
+  db.theme = {
+    ...cleanTheme,
+    activeThemeId: newId
+  };
+
+  saveDb(db);
+  res.status(201).json({
+    customTheme: newCustomTheme,
+    theme: db.theme,
+    customThemes: db.customThemes
+  });
+});
+
+// PUT update an existing custom theme (name, description, and/or theme values)
+app.put('/api/custom-themes/:id', (req, res) => {
+  const db = loadDb();
+  const idx = db.customThemes.findIndex((ct) => ct.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'Theme nicht gefunden' });
+  }
+
+  const existing = db.customThemes[idx];
+  const { name, description, theme: themeValues, setActive } = req.body || {};
+  const nextThemeValues = {
+    ...existing.theme,
+    ...(themeValues || {})
+  };
+  delete nextThemeValues.activeThemeId;
+
+  const updatedCustomTheme = {
+    ...existing,
+    name: name !== undefined ? name.trim() || existing.name : existing.name,
+    description:
+      description !== undefined ? description.trim() : existing.description || '',
+    theme: nextThemeValues
+  };
+
+  db.customThemes[idx] = updatedCustomTheme;
+
+  if (setActive !== false && db.theme.activeThemeId === existing.id) {
+    db.theme = {
+      ...nextThemeValues,
+      activeThemeId: existing.id
+    };
+  }
+
+  saveDb(db);
+  res.json({
+    customTheme: updatedCustomTheme,
+    theme: db.theme,
+    customThemes: db.customThemes
+  });
+});
+
+// DELETE a custom theme
+app.delete('/api/custom-themes/:id', (req, res) => {
+  const db = loadDb();
+  if (db.customThemes.length <= 1) {
+    return res
+      .status(400)
+      .json({ error: 'Mindestens ein Theme muss erhalten bleiben.' });
+  }
+
+  const idx = db.customThemes.findIndex((ct) => ct.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'Theme nicht gefunden' });
+  }
+
+  const deletedId = db.customThemes[idx].id;
+  db.customThemes.splice(idx, 1);
+
+  if (db.theme.activeThemeId === deletedId) {
+    const fallback = db.customThemes[0];
+    db.theme = {
+      ...fallback.theme,
+      activeThemeId: fallback.id
+    };
+  }
+
+  saveDb(db);
+  res.json({
+    theme: db.theme,
+    customThemes: db.customThemes
+  });
+});
+
+// POST reset custom themes and active theme to defaults
+app.post('/api/custom-themes/reset', (_req, res) => {
+  const db = loadDb();
+  db.customThemes = structuredClone(initialData.customThemes);
+  db.theme = structuredClone(initialData.theme);
+  saveDb(db);
+  res.json({
+    theme: db.theme,
+    customThemes: db.customThemes
+  });
 });
 
 // Serve built frontend in production / unified mode

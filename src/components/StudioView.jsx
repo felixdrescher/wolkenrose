@@ -8,7 +8,6 @@ import {
   Plus,
   Type,
   Heading,
-  Quote,
   Camera,
   CheckCircle2,
   ArrowUp,
@@ -30,73 +29,53 @@ import {
 } from 'lucide-react';
 import { extractImageMetadata } from '../utils/exifExtractor';
 
-const CAMERA_PRESETS = [
-  {
-    label: 'Hasselblad X2D Landschaft',
-    exif: {
-      camera: 'Hasselblad X2D 100C',
-      lens: 'XCD 2,5/38V',
-      focalLength: '38mm',
-      aperture: 'f/11',
-      shutterSpeed: '1/15s',
-      iso: '64'
-    }
-  },
-  {
-    label: 'Sony A1 Wildtiere 400mm',
-    exif: {
-      camera: 'Sony Alpha 1 II',
-      lens: 'FE 400mm f/2.8 GM OSS',
-      focalLength: '400mm',
-      aperture: 'f/2.8',
-      shutterSpeed: '1/2000s',
-      iso: '640'
-    }
-  },
-  {
-    label: 'Nachthimmel & Polarlicht 14mm',
-    exif: {
-      camera: 'Sony Alpha 1 II',
-      lens: 'FE 14mm f/1.8 GM',
-      focalLength: '14mm',
-      aperture: 'f/1.8',
-      shutterSpeed: '5s',
-      iso: '1600'
-    }
-  }
-];
-
 export const FREE_FONT_OPTIONS = {
   serif: [
-    { name: 'Cormorant Garamond', label: 'Cormorant Garamond (Klassisch Editorial Serif – Standard)' },
-    { name: 'Playfair Display', label: 'Playfair Display (Modernes Magazin Serif)' },
-    { name: 'Lora', label: 'Lora (Warm & Literarisch Serif)' },
-    { name: 'Merriweather', label: 'Merriweather (Zeitloses Buchdruck Serif)' },
-    { name: 'Libre Baskerville', label: 'Libre Baskerville (Traditionelle Galerie Serif)' },
-    { name: 'Cinzel', label: 'Cinzel (Monumental & Edel)' },
-    { name: 'Space Grotesk', label: 'Space Grotesk (Modern Minimalistisch Sans)' },
-    { name: 'Montserrat', label: 'Montserrat (Geometrisch & Klar Sans)' }
+    { name: 'Cormorant Garamond', label: 'Cormorant Garamond (Standard)' },
+    { name: 'Playfair Display', label: 'Playfair Display' },
+    { name: 'Lora', label: 'Lora' },
+    { name: 'Merriweather', label: 'Merriweather' },
+    { name: 'Libre Baskerville', label: 'Libre Baskerville' },
+    { name: 'EB Garamond', label: 'EB Garamond' },
+    { name: 'Spectral', label: 'Spectral' },
+    { name: 'Crimson Pro', label: 'Crimson Pro' },
+    { name: 'Bitter', label: 'Bitter' },
+    { name: 'Fraunces', label: 'Fraunces' },
+    { name: 'Bodoni Moda', label: 'Bodoni Moda' },
+    { name: 'Cinzel', label: 'Cinzel' }
   ],
   sans: [
-    { name: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans (Modern & Harmonisch – Standard)' },
-    { name: 'Inter', label: 'Inter (Klar & Neutral Sans)' },
-    { name: 'DM Sans', label: 'DM Sans (Freundlich & Geometrisch)' },
-    { name: 'Work Sans', label: 'Work Sans (Editorial Sans-Serif)' },
-    { name: 'Nunito Sans', label: 'Nunito Sans (Weich & Einladend)' },
-    { name: 'Source Sans 3', label: 'Source Sans 3 (Klassisch Lesefreundlich)' }
+    { name: 'Plus Jakarta Sans', label: 'Plus Jakarta Sans (Standard)' },
+    { name: 'Inter', label: 'Inter' },
+    { name: 'DM Sans', label: 'DM Sans' },
+    { name: 'Work Sans', label: 'Work Sans' },
+    { name: 'Nunito Sans', label: 'Nunito Sans' },
+    { name: 'Source Sans 3', label: 'Source Sans 3' },
+    { name: 'Space Grotesk', label: 'Space Grotesk' },
+    { name: 'Montserrat', label: 'Montserrat' },
+    { name: 'Outfit', label: 'Outfit' },
+    { name: 'Raleway', label: 'Raleway' },
+    { name: 'Poppins', label: 'Poppins' },
+    { name: 'Manrope', label: 'Manrope' },
+    { name: 'Rubik', label: 'Rubik' },
+    { name: 'Quicksand', label: 'Quicksand' },
+    { name: 'Josefin Sans', label: 'Josefin Sans' }
   ],
   mono: [
-    { name: 'JetBrains Mono', label: 'JetBrains Mono (Präzise EXIF-Telemetrie – Standard)' },
-    { name: 'Space Mono', label: 'Space Mono (Charakterstarkes Retro-Monospace)' },
-    { name: 'Fira Code', label: 'Fira Code (Klare Technische Schrift)' },
-    { name: 'IBM Plex Mono', label: 'IBM Plex Mono (Archiv-Monospace)' }
+    { name: 'JetBrains Mono', label: 'JetBrains Mono (Standard)' },
+    { name: 'Space Mono', label: 'Space Mono' },
+    { name: 'Fira Code', label: 'Fira Code' },
+    { name: 'IBM Plex Mono', label: 'IBM Plex Mono' },
+    { name: 'Source Code Pro', label: 'Source Code Pro' },
+    { name: 'Roboto Mono', label: 'Roboto Mono' }
   ]
 };
 
-const THEME_PRESETS = [
+export const DEFAULT_CUSTOM_THEMES = [
   {
-    name: 'Bernstein & Nordisches Moos (Standard)',
-    description: 'Warmes Bernsteingold mit tiefem Waldschwarz und feinem Büttenpapier im Hellmodus',
+    id: 'theme-1',
+    name: 'Waldgrün & Ockergold (Standard)',
+    description: 'Dunkelgrün-schwarzer Hintergrund mit warmen Ockergold- und Salbei-Akzenten · Cormorant Garamond & Plus Jakarta Sans',
     theme: {
       defaultMode: 'dark',
       accentPrimary: '#D4A359',
@@ -115,65 +94,151 @@ const THEME_PRESETS = [
     }
   },
   {
-    name: 'Wolkenrose Roségold & Alpenschiefer',
-    description: 'Zartes Morgenrot-Rosé kombiniert mit samtigem Schiefergrau und Rosé-Alabaster',
+    id: 'theme-2',
+    name: 'Nordischer Schiefer & Stahlblau',
+    description: 'Kühles Schiefergrau mit gedämpftem Stahlblau und serifenlosen Überschriften · Outfit & Inter',
     theme: {
       defaultMode: 'dark',
-      accentPrimary: '#E09F95',
-      accentSecondary: '#8FA89B',
-      darkBgPrimary: '#100E11',
-      darkBgSecondary: '#19161B',
-      darkTextPrimary: '#F9F4F3',
-      darkTextSecondary: '#A89FA3',
-      lightBgPrimary: '#FAF5F4',
+      accentPrimary: '#6495B8',
+      accentSecondary: '#7A939E',
+      darkBgPrimary: '#0D1117',
+      darkBgSecondary: '#151B23',
+      darkTextPrimary: '#ECF0F5',
+      darkTextSecondary: '#8B98A9',
+      lightBgPrimary: '#F3F5F8',
       lightBgSecondary: '#FFFFFF',
-      lightTextPrimary: '#231C1E',
-      lightTextSecondary: '#6E5F63',
-      fontSerif: 'Playfair Display',
-      fontSans: 'Plus Jakarta Sans',
-      fontMono: 'JetBrains Mono'
-    }
-  },
-  {
-    name: 'Alpennebel & Gletscherblau',
-    description: 'Kühles Gletscherblau und Arktis-Silber für hochalpine Eis- und Winterserien',
-    theme: {
-      defaultMode: 'dark',
-      accentPrimary: '#6CB4D8',
-      accentSecondary: '#7FA99B',
-      darkBgPrimary: '#090D12',
-      darkBgSecondary: '#111821',
-      darkTextPrimary: '#F0F5F9',
-      darkTextSecondary: '#90A0B0',
-      lightBgPrimary: '#F2F6FA',
-      lightBgSecondary: '#FFFFFF',
-      lightTextPrimary: '#121B24',
-      lightTextSecondary: '#526373',
-      fontSerif: 'Lora',
+      lightTextPrimary: '#141A21',
+      lightTextSecondary: '#526071',
+      fontSerif: 'Outfit',
       fontSans: 'Inter',
       fontMono: 'IBM Plex Mono'
     }
   },
   {
-    name: 'Büttenpapier & Waldgrün (Hell-Fokus)',
-    description: 'Klassische Museums-Ästhetik mit warmem Naturpapier und edlem Tannengrün',
+    id: 'theme-3',
+    name: 'Sandstein, Terrakotta & Oliv (Hell)',
+    description: 'Warmes Museumspapier im Hellmodus mit erdigen Terrakotta- und Olivtönen · Libre Baskerville & Source Sans 3',
     theme: {
       defaultMode: 'light',
-      accentPrimary: '#B87B38',
-      accentSecondary: '#3E6B52',
-      darkBgPrimary: '#0B0F0C',
-      darkBgSecondary: '#131A15',
-      darkTextPrimary: '#F4F1EA',
-      darkTextSecondary: '#9CA39E',
-      lightBgPrimary: '#F3EFE6',
-      lightBgSecondary: '#FAF8F3',
-      lightTextPrimary: '#161C18',
-      lightTextSecondary: '#545E57',
+      accentPrimary: '#B86B43',
+      accentSecondary: '#5A6E53',
+      darkBgPrimary: '#141210',
+      darkBgSecondary: '#1E1B18',
+      darkTextPrimary: '#F2ECE4',
+      darkTextSecondary: '#A39B90',
+      lightBgPrimary: '#F4EFE6',
+      lightBgSecondary: '#FAF7F2',
+      lightTextPrimary: '#1C1917',
+      lightTextSecondary: '#5C554E',
       fontSerif: 'Libre Baskerville',
       fontSans: 'Source Sans 3',
       fontMono: 'Space Mono'
     }
+  },
+  {
+    id: 'theme-4',
+    name: 'Monochrom Galerie (Schwarz & Silber)',
+    description: 'Neutrales Dunkelkammer-Schwarz und mattes Silbergrau für unverfälschte Farbwirkung der Fotos · Space Grotesk & DM Sans',
+    theme: {
+      defaultMode: 'dark',
+      accentPrimary: '#B0B8C0',
+      accentSecondary: '#7D858C',
+      darkBgPrimary: '#0A0A0B',
+      darkBgSecondary: '#141416',
+      darkTextPrimary: '#F2F2F3',
+      darkTextSecondary: '#96969C',
+      lightBgPrimary: '#F5F5F6',
+      lightBgSecondary: '#FFFFFF',
+      lightTextPrimary: '#121214',
+      lightTextSecondary: '#5A5A62',
+      fontSerif: 'Space Grotesk',
+      fontSans: 'DM Sans',
+      fontMono: 'Roboto Mono'
+    }
   }
+];
+
+export const DARK_BG_OPTIONS = [
+  {
+    label: 'Wald-Anthrazit (Standard)',
+    primary: '#0B0E0C',
+    secondary: '#121614'
+  },
+  {
+    label: 'Tiefschwarz (Dunkelkammer)',
+    primary: '#080809',
+    secondary: '#121214'
+  },
+  {
+    label: 'Neutrales Graphit',
+    primary: '#121214',
+    secondary: '#1C1C1F'
+  },
+  {
+    label: 'Kühles Schiefergrau',
+    primary: '#0D1117',
+    secondary: '#151B23'
+  },
+  {
+    label: 'Warmes Espresso / Basalt',
+    primary: '#141210',
+    secondary: '#1E1B18'
+  },
+  {
+    label: 'Mitternachtsblau',
+    primary: '#090D16',
+    secondary: '#111826'
+  }
+];
+
+export const LIGHT_BG_OPTIONS = [
+  {
+    label: 'Warmes Cremeweiß (Standard)',
+    primary: '#F6F3EC',
+    secondary: '#FFFFFF'
+  },
+  {
+    label: 'Reines Galerie-Weiß',
+    primary: '#FFFFFF',
+    secondary: '#F5F5F7'
+  },
+  {
+    label: 'Museumspapier / Sandstein',
+    primary: '#F4EFE6',
+    secondary: '#FAF7F2'
+  },
+  {
+    label: 'Neutrales Hellgrau',
+    primary: '#F2F3F5',
+    secondary: '#FFFFFF'
+  },
+  {
+    label: 'Kühles Alabaster / Eisweiß',
+    primary: '#F3F5F8',
+    secondary: '#FFFFFF'
+  },
+  {
+    label: 'Zartes Salbei-Weiß',
+    primary: '#F0F4F1',
+    secondary: '#FFFFFF'
+  }
+];
+
+const THEME_VALUE_KEYS = [
+  'defaultMode',
+  'accentPrimary',
+  'accentSecondary',
+  'darkBgPrimary',
+  'darkBgSecondary',
+  'darkTextPrimary',
+  'darkTextSecondary',
+  'lightBgPrimary',
+  'lightBgSecondary',
+  'lightTextPrimary',
+  'lightTextSecondary',
+  'fontSerif',
+  'fontSans',
+  'fontMono'
 ];
 
 function createEmptyPhotoForm(defaultCategory = '') {
@@ -181,9 +246,8 @@ function createEmptyPhotoForm(defaultCategory = '') {
     title: '',
     category: defaultCategory,
     location: '',
-    coordinates: '',
     dateTaken: '',
-    featured: true,
+    featured: false,
     landingSelected: false,
     imageUrl: '',
     story: '',
@@ -225,9 +289,15 @@ export default function StudioView({
   onSelectPhoto,
   onSelectPost,
   theme,
+  customThemes = [],
   onUpdateTheme,
+  onCreateCustomTheme,
+  onSaveCustomTheme,
+  onDeleteCustomTheme,
+  onResetCustomThemes,
   colorMode,
-  onSetColorMode
+  onSetColorMode,
+  onRegisterLeaveGuard
 }) {
   const [subTab, setSubTab] = useState(initialSubTab);
   const [bannerMessage, setBannerMessage] = useState(null);
@@ -280,7 +350,7 @@ export default function StudioView({
     publishedAt: new Date().toISOString().split('T')[0],
     featured: true,
     coverImage: '',
-    tags: 'Wolkenrose, Naturfotografie',
+    tags: '',
     blocks: [
       {
         id: `block-${Date.now()}-1`,
@@ -322,10 +392,6 @@ export default function StudioView({
     equipmentTitle: profile?.equipmentTitle || 'Kameraausrüstung & Objektive',
     equipmentIntro: profile?.equipmentIntro || '',
     equipment: Array.isArray(profile?.equipment) ? [...profile.equipment] : [],
-    printsSubtitle: profile?.printsSubtitle || 'Fine-Art-Editionen & Manufaktur',
-    printsTitle:
-      profile?.printsTitle || 'Handsignierte Kunstdrucke aus dem Atelier Wolkenrose',
-    printsText: profile?.printsText || '',
     contactIntro: profile?.contactIntro || '',
     email: profile?.email || '',
     phone: profile?.phone || '',
@@ -334,13 +400,13 @@ export default function StudioView({
       instagramUrl: profile?.socials?.instagramUrl || 'https://instagram.com/wolkenrose.petraschemmel',
       blueskyHandle: profile?.socials?.blueskyHandle || '@wolkenrose.bsky.social',
       blueskyUrl: profile?.socials?.blueskyUrl || 'https://bsky.app/profile/wolkenrose.bsky.social',
-      youtubeHandle: profile?.socials?.youtubeHandle || '',
-      youtubeUrl: profile?.socials?.youtubeUrl || '',
-      pinterestHandle: profile?.socials?.pinterestHandle || '',
-      pinterestUrl: profile?.socials?.pinterestUrl || ''
+      custom: Array.isArray(profile?.socials?.custom) ? [...profile.socials.custom] : []
     }
   }));
   const [newEquipmentItem, setNewEquipmentItem] = useState('');
+  const [newSocialPlatform, setNewSocialPlatform] = useState('');
+  const [newSocialHandle, setNewSocialHandle] = useState('');
+  const [newSocialUrl, setNewSocialUrl] = useState('');
 
   useEffect(() => {
     if (profile) {
@@ -355,10 +421,6 @@ export default function StudioView({
         equipmentTitle: profile.equipmentTitle || 'Kameraausrüstung & Objektive',
         equipmentIntro: profile.equipmentIntro || '',
         equipment: Array.isArray(profile.equipment) ? [...profile.equipment] : [],
-        printsSubtitle: profile.printsSubtitle || 'Fine-Art-Editionen & Manufaktur',
-        printsTitle:
-          profile.printsTitle || 'Handsignierte Kunstdrucke aus dem Atelier Wolkenrose',
-        printsText: profile.printsText || '',
         contactIntro: profile.contactIntro || '',
         email: profile.email || '',
         phone: profile.phone || '',
@@ -367,10 +429,9 @@ export default function StudioView({
           instagramUrl: profile.socials?.instagramUrl || '',
           blueskyHandle: profile.socials?.blueskyHandle || '',
           blueskyUrl: profile.socials?.blueskyUrl || '',
-          youtubeHandle: profile.socials?.youtubeHandle || '',
-          youtubeUrl: profile.socials?.youtubeUrl || '',
-          pinterestHandle: profile.socials?.pinterestHandle || '',
-          pinterestUrl: profile.socials?.pinterestUrl || ''
+          custom: Array.isArray(profile.socials?.custom)
+            ? profile.socials.custom.map((item) => ({ ...item }))
+            : []
         }
       });
     }
@@ -500,12 +561,12 @@ export default function StudioView({
     showToast(`Blog-Rubrik „${catName}“ wurde gelöscht.`);
   };
 
-  // --- GALLERY PHOTO UPLOAD + AUTO EXIF/GPS EXTRACTION ---
+  // --- GALLERY PHOTO UPLOAD + AUTO EXIF EXTRACTION ---
   const handlePhotoFileSelect = async (file) => {
     if (!file) return;
     try {
       setIsUploading(true);
-      setExifStatusMessage('Lese Bilddatei & eingebettete EXIF-/GPS-Metadaten aus...');
+      setExifStatusMessage('Lese Bilddatei & eingebettete EXIF-Metadaten aus...');
 
       const [uploaded, meta] = await Promise.all([
         onUploadFile(file),
@@ -522,7 +583,6 @@ export default function StudioView({
         imageUrl: uploaded.imageUrl,
         title: prev.title || inferredTitle,
         location: meta.location || prev.location,
-        coordinates: meta.coordinates || prev.coordinates,
         dateTaken: meta.dateTaken || prev.dateTaken,
         exif: {
           camera: meta.exif.camera || prev.exif.camera,
@@ -538,7 +598,6 @@ export default function StudioView({
         const foundParts = [
           meta.exif.camera && `Kamera (${meta.exif.camera})`,
           meta.dateTaken && `Datum (${meta.dateTaken})`,
-          meta.coordinates && `GPS (${meta.coordinates})`,
           meta.location && `Ort (${meta.location})`
         ].filter(Boolean);
         setExifStatusMessage(
@@ -551,7 +610,7 @@ export default function StudioView({
         );
       } else {
         setExifStatusMessage(
-          'Keine eingebetteten EXIF-/GPS-Metadaten in dieser Bilddatei gefunden. Alle Felder sind optional.'
+          'Keine eingebetteten EXIF-Metadaten in dieser Bilddatei gefunden. Alle Felder sind optional.'
         );
         showToast(`Bilddatei „${file.name}“ erfolgreich hochgeladen.`);
       }
@@ -625,18 +684,11 @@ export default function StudioView({
             caption: '',
             exifNote: ''
           }
-        : type === 'quote'
-          ? {
-              id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-              type: 'quote',
-              content: '',
-              author: 'Petra Schemmel · Wolkenrose'
-            }
-          : {
-              id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-              type,
-              content: ''
-            };
+        : {
+            id: `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            type,
+            content: ''
+          };
 
     setPostForm((prev) => ({
       ...prev,
@@ -710,7 +762,6 @@ export default function StudioView({
         exifNote: meta.exifNote || currentBlock?.exifNote || '',
         exif: meta.foundExif ? meta.exif : currentBlock?.exif,
         location: meta.location || currentBlock?.location || '',
-        coordinates: meta.coordinates || currentBlock?.coordinates || '',
         dateTaken: meta.dateTaken || currentBlock?.dateTaken || ''
       };
 
@@ -823,28 +874,252 @@ export default function StudioView({
     }));
   };
 
-  const handleSaveProfileForm = async (e) => {
-    e.preventDefault();
-    await onUpdateProfile(profileForm);
-    showToast('Alle Texte, Ausrüstung, Porträtbild und Kontaktdaten wurden gespeichert!');
+  const handleAddCustomSocial = () => {
+    const platform = newSocialPlatform.trim();
+    const handle = newSocialHandle.trim();
+    const url = newSocialUrl.trim();
+    if (!platform && !handle && !url) return;
+
+    const newItem = {
+      id: `social-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      platform: platform || 'Social Media',
+      handle,
+      url
+    };
+
+    setProfileForm((prev) => ({
+      ...prev,
+      socials: {
+        ...prev.socials,
+        custom: [...(prev.socials.custom || []), newItem]
+      }
+    }));
+    setNewSocialPlatform('');
+    setNewSocialHandle('');
+    setNewSocialUrl('');
   };
 
-  // --- THEME, COLORS & FONTS HANDLERS ---
+  const handleUpdateCustomSocial = (idOrIdx, field, value) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      socials: {
+        ...prev.socials,
+        custom: (prev.socials.custom || []).map((item, idx) =>
+          item.id === idOrIdx || idx === idOrIdx ? { ...item, [field]: value } : item
+        )
+      }
+    }));
+  };
+
+  const handleRemoveCustomSocial = (idOrIdx) => {
+    setProfileForm((prev) => ({
+      ...prev,
+      socials: {
+        ...prev.socials,
+        custom: (prev.socials.custom || []).filter(
+          (item, idx) => item.id !== idOrIdx && idx !== idOrIdx
+        )
+      }
+    }));
+  };
+
+  const handleSaveProfileForm = async (e) => {
+    e.preventDefault();
+    let payload = profileForm;
+    if (
+      newSocialPlatform.trim() ||
+      newSocialHandle.trim() ||
+      newSocialUrl.trim()
+    ) {
+      const pendingItem = {
+        id: `social-${Date.now()}`,
+        platform: newSocialPlatform.trim() || 'Social Media',
+        handle: newSocialHandle.trim(),
+        url: newSocialUrl.trim()
+      };
+      payload = {
+        ...profileForm,
+        socials: {
+          ...profileForm.socials,
+          custom: [...(profileForm.socials.custom || []), pendingItem]
+        }
+      };
+      setProfileForm(payload);
+      setNewSocialPlatform('');
+      setNewSocialHandle('');
+      setNewSocialUrl('');
+    }
+    await onUpdateProfile(payload);
+    showToast('Alle Texte, Ausrüstung, Porträtbild und Kontaktdaten wurden gespeichert!');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --- CUSTOM THEMES, COLORS & FONTS STATE & HANDLERS ---
+  const themesList =
+    Array.isArray(customThemes) && customThemes.length > 0
+      ? customThemes
+      : DEFAULT_CUSTOM_THEMES;
+
+  const activeThemeId = theme?.activeThemeId || themesList[0]?.id;
+  const activeCustomTheme =
+    themesList.find((ct) => ct.id === activeThemeId) || themesList[0];
+
+  const [editingThemeName, setEditingThemeName] = useState(
+    activeCustomTheme?.name || ''
+  );
+  const [editingThemeDescription, setEditingThemeDescription] = useState(
+    activeCustomTheme?.description || ''
+  );
+  const [newThemeName, setNewThemeName] = useState('');
+  const [showNewThemeForm, setShowNewThemeForm] = useState(false);
+  const [unsavedThemeModalAction, setUnsavedThemeModalAction] = useState(null);
+
+  useEffect(() => {
+    if (activeCustomTheme) {
+      setEditingThemeName(activeCustomTheme.name || '');
+      setEditingThemeDescription(activeCustomTheme.description || '');
+    }
+  }, [activeCustomTheme?.id, activeCustomTheme?.name, activeCustomTheme?.description]);
+
+  const isThemeDirty = Boolean(
+    activeCustomTheme &&
+      (editingThemeName.trim() !== (activeCustomTheme.name || '').trim() ||
+        editingThemeDescription.trim() !==
+          (activeCustomTheme.description || '').trim() ||
+        THEME_VALUE_KEYS.some(
+          (k) =>
+            String(theme?.[k] || '').toLowerCase() !==
+            String(activeCustomTheme.theme?.[k] || '').toLowerCase()
+        ))
+  );
+
+  const handleRevertThemeChanges = () => {
+    if (!activeCustomTheme) return;
+    setEditingThemeName(activeCustomTheme.name || '');
+    setEditingThemeDescription(activeCustomTheme.description || '');
+    const reverted = {
+      ...activeCustomTheme.theme,
+      activeThemeId: activeCustomTheme.id
+    };
+    onUpdateTheme(reverted, false);
+    if (activeCustomTheme.theme?.defaultMode) {
+      onSetColorMode(activeCustomTheme.theme.defaultMode);
+    }
+  };
+
+  useEffect(() => {
+    if (!onRegisterLeaveGuard) return;
+    onRegisterLeaveGuard((proceedCallback) => {
+      if (subTab === 'design-colors' && isThemeDirty) {
+        setUnsavedThemeModalAction(() => proceedCallback);
+        return true;
+      }
+      return false;
+    });
+    return () => {
+      onRegisterLeaveGuard(null);
+    };
+  }, [onRegisterLeaveGuard, subTab, isThemeDirty, editingThemeName, editingThemeDescription, theme, activeCustomTheme]);
+
+  const handleRequestSubTabChange = (nextSubTab) => {
+    if (nextSubTab === subTab) return;
+    if (subTab === 'design-colors' && isThemeDirty) {
+      setUnsavedThemeModalAction(() => () => setSubTab(nextSubTab));
+      return;
+    }
+    setSubTab(nextSubTab);
+  };
+
   const handleColorFieldChange = (key, value) => {
     onUpdateTheme({ ...theme, [key]: value }, false);
   };
 
-  const handleSaveThemeToServer = async () => {
-    await onUpdateTheme(theme, true);
-    showToast('Farbdesign und Schriftarten wurden dauerhaft gespeichert!');
+  const handleBackgroundPairChange = (primaryKey, secondaryKey, primaryVal, secondaryVal) => {
+    onUpdateTheme(
+      {
+        ...theme,
+        [primaryKey]: primaryVal,
+        [secondaryKey]: secondaryVal
+      },
+      false
+    );
   };
 
-  const handleApplyPreset = async (preset) => {
-    await onUpdateTheme(preset.theme, true);
-    if (preset.theme.defaultMode) {
-      onSetColorMode(preset.theme.defaultMode);
+  const handleSaveThemeToServer = async () => {
+    if (activeCustomTheme && onSaveCustomTheme) {
+      await onSaveCustomTheme(activeCustomTheme.id, {
+        name: editingThemeName.trim() || activeCustomTheme.name,
+        description: editingThemeDescription.trim(),
+        theme
+      });
+      showToast(
+        `Theme „${editingThemeName.trim() || activeCustomTheme.name}“ (inkl. Farben & Schriften) wurde dauerhaft gespeichert!`
+      );
+    } else {
+      await onUpdateTheme(theme, true);
+      showToast('Farbdesign und Schriftarten wurden dauerhaft gespeichert!');
     }
-    showToast(`Vorlage „${preset.name}“ wurde aktiviert und gespeichert!`);
+  };
+
+  const performSelectCustomTheme = async (ct) => {
+    const nextTheme = {
+      ...ct.theme,
+      activeThemeId: ct.id
+    };
+    setEditingThemeName(ct.name || '');
+    setEditingThemeDescription(ct.description || '');
+    await onUpdateTheme(nextTheme, true);
+    if (ct.theme?.defaultMode) {
+      onSetColorMode(ct.theme.defaultMode);
+    }
+    showToast(`Theme „${ct.name}“ wurde aktiviert!`);
+  };
+
+  const handleSelectCustomTheme = (ct) => {
+    if (ct.id === activeCustomTheme?.id) return;
+    if (isThemeDirty) {
+      setUnsavedThemeModalAction(() => () => performSelectCustomTheme(ct));
+      return;
+    }
+    performSelectCustomTheme(ct);
+  };
+
+  const handleCreateNewTheme = async (e) => {
+    if (e) e.preventDefault();
+    const nameToUse =
+      newThemeName.trim() || `Custom Theme ${themesList.length + 1}`;
+    if (onCreateCustomTheme) {
+      const created = await onCreateCustomTheme({
+        name: nameToUse,
+        description: `${theme.fontSerif || 'Cormorant Garamond'} & ${theme.fontSans || 'Plus Jakarta Sans'}`,
+        theme
+      });
+      if (created) {
+        setEditingThemeName(created.name);
+        setEditingThemeDescription(created.description || '');
+      }
+    }
+    setNewThemeName('');
+    setShowNewThemeForm(false);
+    showToast(`Neues Theme „${nameToUse}“ wurde angelegt und ausgewählt!`);
+  };
+
+  const handleDeleteThemeEntry = async (id, name) => {
+    if (themesList.length <= 1) {
+      showToast('Mindestens ein Theme muss vorhanden bleiben.');
+      return;
+    }
+    if (onDeleteCustomTheme) {
+      await onDeleteCustomTheme(id);
+      showToast(`Theme „${name}“ wurde gelöscht.`);
+    }
+  };
+
+  const handleResetAllThemes = async () => {
+    if (onResetCustomThemes) {
+      await onResetCustomThemes();
+      showToast('Standard-Themes wurden wiederhergestellt!');
+    }
   };
 
   const previewOpticalStr = [
@@ -882,7 +1157,7 @@ export default function StudioView({
         {/* Studio Mode Switcher */}
         <div className="flex flex-wrap items-center gap-1.5 bg-[var(--bg-secondary)] p-1.5 rounded-2xl border border-[var(--border-color)] self-start">
           <button
-            onClick={() => setSubTab('upload-photo')}
+            onClick={() => handleRequestSubTabChange('upload-photo')}
             style={
               subTab === 'upload-photo'
                 ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
@@ -897,7 +1172,7 @@ export default function StudioView({
           </button>
 
           <button
-            onClick={() => setSubTab('write-post')}
+            onClick={() => handleRequestSubTabChange('write-post')}
             style={
               subTab === 'write-post'
                 ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
@@ -912,7 +1187,7 @@ export default function StudioView({
           </button>
 
           <button
-            onClick={() => setSubTab('manage-archive')}
+            onClick={() => handleRequestSubTabChange('manage-archive')}
             style={
               subTab === 'manage-archive'
                 ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
@@ -927,7 +1202,7 @@ export default function StudioView({
           </button>
 
           <button
-            onClick={() => setSubTab('about-contact')}
+            onClick={() => handleRequestSubTabChange('about-contact')}
             style={
               subTab === 'about-contact'
                 ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
@@ -942,7 +1217,7 @@ export default function StudioView({
           </button>
 
           <button
-            onClick={() => setSubTab('design-colors')}
+            onClick={() => handleRequestSubTabChange('design-colors')}
             style={
               subTab === 'design-colors'
                 ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
@@ -989,11 +1264,11 @@ export default function StudioView({
                   Neue Fotografie hochladen
                 </h2>
                 <p className="text-xs text-[var(--text-secondary)]">
-                  Beim Auswählen einer Bilddatei werden EXIF-Daten, Aufnahmedatum, GPS-Koordinaten und Aufnahmeort automatisch ausgelesen. Alle Angaben sind optional.
+                  Beim Auswählen einer Bilddatei werden EXIF-Daten, Aufnahmedatum und Aufnahmeort automatisch ausgelesen. Alle Angaben sind optional.
                 </p>
               </div>
               <span className="font-telemetry text-xs text-[var(--accent-primary)] shrink-0 ml-2">
-                AUTO-EXIF · GPS
+                AUTO-EXIF
               </span>
             </div>
 
@@ -1039,7 +1314,7 @@ export default function StudioView({
                   : 'Fotografie hierher ziehen oder klicken, um Datei auszuwählen'}
               </p>
               <p className="text-xs text-[var(--text-secondary)] mt-1">
-                Kamera, Objektiv, Belichtung, Datum, GPS-Koordinaten & Ort werden automatisch aus der Datei gelesen
+                Kamera, Objektiv, Belichtung, Datum & Ort werden automatisch aus der Datei gelesen
               </p>
             </div>
 
@@ -1069,7 +1344,6 @@ export default function StudioView({
                 onChange={(e) =>
                   setPhotoForm({ ...photoForm, imageUrl: e.target.value })
                 }
-                placeholder="/uploads/dein-foto.jpg oder https://images.unsplash.com/..."
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               />
             </div>
@@ -1086,7 +1360,6 @@ export default function StudioView({
                   onChange={(e) =>
                     setPhotoForm({ ...photoForm, title: e.target.value })
                   }
-                  placeholder="z. B. Abendrot über dem Karwendel"
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>
@@ -1121,8 +1394,8 @@ export default function StudioView({
               </div>
             </div>
 
-            {/* Location, Coordinates & Date (All Optional & Auto-filled from EXIF/GPS) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Location & Date (All Optional & Auto-filled from EXIF) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
                   Aufnahmeort (optional)
@@ -1133,23 +1406,7 @@ export default function StudioView({
                   onChange={(e) =>
                     setPhotoForm({ ...photoForm, location: e.target.value })
                   }
-                  placeholder="Wird aus GPS ermittelt..."
                   className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  GPS-Koordinaten (optional)
-                </label>
-                <input
-                  type="text"
-                  value={photoForm.coordinates}
-                  onChange={(e) =>
-                    setPhotoForm({ ...photoForm, coordinates: e.target.value })
-                  }
-                  placeholder="Wird aus EXIF gelesen..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm font-telemetry text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>
 
@@ -1179,7 +1436,6 @@ export default function StudioView({
                 onChange={(e) =>
                   setPhotoForm({ ...photoForm, story: e.target.value })
                 }
-                placeholder="Optional: Erzähle von der Lichtstimmung, dem Wetter oder dem besonderen Moment..."
                 className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               />
             </div>
@@ -1191,39 +1447,25 @@ export default function StudioView({
                   <Camera className="w-4 h-4" />
                   Kamera & EXIF-Aufnahmedaten (optional · automatisch aus Datei)
                 </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {CAMERA_PRESETS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      type="button"
-                      onClick={() =>
-                        setPhotoForm({ ...photoForm, exif: { ...preset.exif } })
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPhotoForm({
+                      ...photoForm,
+                      exif: {
+                        camera: '',
+                        lens: '',
+                        focalLength: '',
+                        aperture: '',
+                        shutterSpeed: '',
+                        iso: ''
                       }
-                      className="px-2.5 py-1 rounded-lg text-[11px] font-telemetry bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] border border-[var(--border-color)] transition-colors cursor-pointer"
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setPhotoForm({
-                        ...photoForm,
-                        exif: {
-                          camera: '',
-                          lens: '',
-                          focalLength: '',
-                          aperture: '',
-                          shutterSpeed: '',
-                          iso: ''
-                        }
-                      })
-                    }
-                    className="px-2.5 py-1 rounded-lg text-[11px] font-telemetry bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-red-400 border border-[var(--border-color)] transition-colors cursor-pointer"
-                  >
-                    EXIF leeren
-                  </button>
-                </div>
+                    })
+                  }
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-telemetry bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-red-400 border border-[var(--border-color)] transition-colors cursor-pointer"
+                >
+                  EXIF leeren
+                </button>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1240,7 +1482,6 @@ export default function StudioView({
                         exif: { ...photoForm.exif, camera: e.target.value }
                       })
                     }
-                    placeholder="Automatisch aus EXIF..."
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1257,7 +1498,6 @@ export default function StudioView({
                         exif: { ...photoForm.exif, lens: e.target.value }
                       })
                     }
-                    placeholder="Automatisch aus EXIF..."
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1274,7 +1514,6 @@ export default function StudioView({
                         exif: { ...photoForm.exif, focalLength: e.target.value }
                       })
                     }
-                    placeholder="z. B. 35mm"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1291,7 +1530,6 @@ export default function StudioView({
                         exif: { ...photoForm.exif, aperture: e.target.value }
                       })
                     }
-                    placeholder="z. B. f/8"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1311,7 +1549,6 @@ export default function StudioView({
                         }
                       })
                     }
-                    placeholder="z. B. 1/250s"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1328,7 +1565,6 @@ export default function StudioView({
                         exif: { ...photoForm.exif, iso: e.target.value }
                       })
                     }
-                    placeholder="z. B. 100"
                     className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
                   />
                 </div>
@@ -1346,7 +1582,7 @@ export default function StudioView({
                   }
                   className="w-4 h-4 accent-[var(--accent-primary)] rounded"
                 />
-                <span>Im großen Hero-Slider ganz oben zeigen</span>
+                <span>Als großes Titelbild auf der Startseite zeigen</span>
               </label>
 
               <button
@@ -1435,7 +1671,7 @@ export default function StudioView({
                         handleAddCategory();
                       }
                     }}
-                    placeholder="Neue Kategorie (z. B. Makro & Details)..."
+                    placeholder="Kategoriename"
                     className="flex-1 px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                   <button
@@ -1533,17 +1769,6 @@ export default function StudioView({
                       </h2>
                     );
                   }
-                  if (block.type === 'quote') {
-                    return (
-                      <blockquote
-                        key={block.id || idx}
-                        style={{ borderLeftColor: 'var(--accent-primary)' }}
-                        className="p-6 rounded-2xl bg-[var(--bg-primary)] border-l-4 font-editorial italic text-2xl text-[var(--text-primary)]"
-                      >
-                        „{block.content}“
-                      </blockquote>
-                    );
-                  }
                   if (block.type === 'image') {
                     return (
                       <figure
@@ -1599,7 +1824,6 @@ export default function StudioView({
                         onChange={(e) =>
                           setPostForm({ ...postForm, title: e.target.value })
                         }
-                        placeholder="z. B. Morgennebel im Moor: Wenn die Wolkenrose erwacht"
                         className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] font-editorial text-2xl text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                       />
                     </div>
@@ -1614,7 +1838,6 @@ export default function StudioView({
                         onChange={(e) =>
                           setPostForm({ ...postForm, subtitle: e.target.value })
                         }
-                        placeholder="Eine kurze Einführung in das Erlebnis, den Ort und die fotografische Serie..."
                         className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                       />
                     </div>
@@ -1651,7 +1874,7 @@ export default function StudioView({
 
                       <div>
                         <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)] mb-1">
-                          Ort / Region (optional · aus GPS)
+                          Ort / Region (optional)
                         </label>
                         <input
                           type="text"
@@ -1659,7 +1882,6 @@ export default function StudioView({
                           onChange={(e) =>
                             setPostForm({ ...postForm, location: e.target.value })
                           }
-                          placeholder="Optional oder automatisch aus Foto"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)]"
                         />
                       </div>
@@ -1674,7 +1896,6 @@ export default function StudioView({
                           onChange={(e) =>
                             setPostForm({ ...postForm, tags: e.target.value })
                           }
-                          placeholder="Wolkenrose, Alpen, Morgenlicht"
                           className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)]"
                         />
                       </div>
@@ -1748,7 +1969,7 @@ export default function StudioView({
                       onChange={(e) =>
                         setPostForm({ ...postForm, coverImage: e.target.value })
                       }
-                      placeholder="Oder Bild-URL hier einfügen..."
+                      placeholder="URL"
                       className="w-full px-3 py-1.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                     />
                   </div>
@@ -1802,7 +2023,7 @@ export default function StudioView({
                     Inhaltsblöcke des Beitrags ({postForm.blocks.length})
                   </h3>
                   <span className="text-xs text-[var(--text-secondary)]">
-                    Füge beliebig viele Textabsätze, Zwischenüberschriften, Zitate und Fotos hinzu
+                    Füge beliebig viele Textabsätze, Zwischenüberschriften und Fotos hinzu
                   </span>
                 </div>
 
@@ -1818,9 +2039,7 @@ export default function StudioView({
                           ? 'TEXTABSATZ'
                           : block.type === 'image'
                             ? 'FOTOGRAFIE (AUTO-EXIF)'
-                            : block.type === 'heading'
-                              ? 'ÜBERSCHRIFT'
-                              : 'ZITAT'}
+                            : 'ÜBERSCHRIFT'}
                       </span>
 
                       <div className="flex items-center gap-1.5">
@@ -1860,7 +2079,6 @@ export default function StudioView({
                         onChange={(e) =>
                           updateBlock(block.id, { content: e.target.value })
                         }
-                        placeholder="Schreibe hier deinen Textabsatz..."
                         className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm sm:text-base text-[var(--text-primary)] leading-relaxed focus:outline-none focus:border-[var(--accent-primary)]"
                       />
                     )}
@@ -1872,32 +2090,8 @@ export default function StudioView({
                         onChange={(e) =>
                           updateBlock(block.id, { content: e.target.value })
                         }
-                        placeholder="Zwischenüberschrift eingeben..."
                         className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] font-editorial text-2xl text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                       />
-                    )}
-
-                    {block.type === 'quote' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <input
-                          type="text"
-                          value={block.content}
-                          onChange={(e) =>
-                            updateBlock(block.id, { content: e.target.value })
-                          }
-                          placeholder="Zitat oder besonderen Gedanken eingeben..."
-                          className="sm:col-span-2 px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] font-editorial italic text-xl text-[var(--text-primary)]"
-                        />
-                        <input
-                          type="text"
-                          value={block.author || ''}
-                          onChange={(e) =>
-                            updateBlock(block.id, { author: e.target.value })
-                          }
-                          placeholder="Quelle / Ort (optional)"
-                          className="px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--text-primary)]"
-                        />
-                      </div>
                     )}
 
                     {block.type === 'image' && (
@@ -1973,7 +2167,7 @@ export default function StudioView({
                                   imageUrl: e.target.value
                                 })
                               }
-                              placeholder="/uploads/... oder https://..."
+                              placeholder="URL"
                               className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                             />
                           </div>
@@ -1990,7 +2184,6 @@ export default function StudioView({
                                   caption: e.target.value
                                 })
                               }
-                              placeholder="Optional: z. B. Erste Sonnenstrahlen über dem Nebelmeer"
                               className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-primary)]"
                             />
                           </div>
@@ -2007,7 +2200,6 @@ export default function StudioView({
                                   exifNote: e.target.value
                                 })
                               }
-                              placeholder="Optional (wird bei vorhandenen EXIF-Metadaten automatisch ausgefüllt)"
                               className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs font-telemetry text-[var(--accent-primary)]"
                             />
                           </div>
@@ -2041,7 +2233,6 @@ export default function StudioView({
                                         exifNote: noteParts.join(' · '),
                                         exif: p.exif,
                                         location: p.location || '',
-                                        coordinates: p.coordinates || '',
                                         dateTaken: p.dateTaken || ''
                                       });
                                       setGalleryPickerTarget(null);
@@ -2099,15 +2290,6 @@ export default function StudioView({
                   >
                     <Heading className="w-3.5 h-3.5 text-[var(--accent-secondary)]" />
                     <span>+ Zwischenüberschrift</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => addBlock('quote')}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium bg-[var(--bg-primary)] hover:opacity-85 text-[var(--text-primary)] border border-[var(--border-color)] cursor-pointer"
-                  >
-                    <Quote className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-                    <span>+ Zitat</span>
                   </button>
                 </div>
               </div>
@@ -2170,7 +2352,7 @@ export default function StudioView({
                       type="text"
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      placeholder="Neue Foto-Kategorie..."
+                      placeholder="Name"
                       className="px-3.5 py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                     />
                     <button
@@ -2293,7 +2475,7 @@ export default function StudioView({
                       type="text"
                       value={newBlogCategoryName}
                       onChange={(e) => setNewBlogCategoryName(e.target.value)}
-                      placeholder="Neue Blog-Rubrik..."
+                      placeholder="Name"
                       className="px-3.5 py-2 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                     />
                     <button
@@ -2473,7 +2655,7 @@ export default function StudioView({
                         )}
                         {photo.featured && (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-telemetry bg-black/75 text-white border border-white/15">
-                            Hero-Slider
+                            Startseiten-Titelbild
                           </span>
                         )}
                       </div>
@@ -2527,22 +2709,24 @@ export default function StudioView({
                         </span>
                       </button>
 
-                      {/* Hero Slider & Delete Controls */}
+                      {/* Startseiten-Titelbild & Delete Controls */}
                       <div className="flex items-center justify-between pt-2 border-t border-[var(--border-color)]">
                         <button
                           type="button"
-                          onClick={() =>
-                            onUpdatePhoto(photo.id, { featured: !photo.featured })
-                          }
+                          onClick={async () => {
+                            if (photo.featured) return;
+                            await onUpdatePhoto(photo.id, { featured: true });
+                            showToast(`„${photo.title}“ ist jetzt das aktive Startseiten-Titelbild.`);
+                          }}
                           className={`inline-flex items-center gap-1 text-xs font-telemetry px-2.5 py-1 rounded-lg cursor-pointer ${
                             photo.featured
                               ? 'bg-[var(--surface-subtle)] text-[var(--accent-primary)] border border-[var(--accent-primary)]/40'
                               : 'bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                           }`}
-                          title="Im großen Hero-Banner ganz oben anzeigen"
+                          title="Als einziges großes Titelbild (Hero-Banner) auf der Startseite setzen"
                         >
-                          <Star className="w-3.5 h-3.5" />
-                          <span>{photo.featured ? 'Im Hero-Banner' : 'Hero-Banner'}</span>
+                          <Star className={`w-3.5 h-3.5 ${photo.featured ? 'fill-current' : ''}`} />
+                          <span>{photo.featured ? 'Als Titelbild aktiv' : 'Als Titelbild'}</span>
                         </button>
 
                         <button
@@ -2687,7 +2871,7 @@ export default function StudioView({
                   „Über mich“-Seite bearbeiten
                 </h2>
                 <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-                  Passe dein Porträtbild, deine Biografie, deine Kameraausrüstung und die Texte zu deinen Kunstdrucken an.
+                  Passe dein Porträtbild, deine Biografie und deine Kameraausrüstung an.
                 </p>
               </div>
               <button
@@ -2702,11 +2886,11 @@ export default function StudioView({
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Left 4 Cols: Portrait Photo Upload */}
-              <div className="lg:col-span-4 space-y-3">
-                <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)]">
-                  Porträtbild auf der „Über mich“-Seite
+              <div className="lg:col-span-4 space-y-4 flex flex-col items-center">
+                <label className="block text-xs font-telemetry uppercase tracking-wider text-[var(--text-secondary)] text-center">
+                  Porträtbild auf der „Über mich“-Seite (Kreisform)
                 </label>
-                <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden bg-[var(--bg-primary)] border-2 border-[var(--border-color)] shadow-lg ring-4 ring-[var(--surface-subtle)] shrink-0">
                   <img
                     src={profileForm.portraitImage}
                     alt={profileForm.name}
@@ -2743,7 +2927,7 @@ export default function StudioView({
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, portraitImage: e.target.value })
                   }
-                  placeholder="Oder Bild-URL eingeben..."
+                  placeholder="URL"
                   className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                 />
               </div>
@@ -2798,67 +2982,13 @@ export default function StudioView({
                     Über-mich-Text / Biografie
                   </label>
                   <textarea
-                    rows={5}
+                    rows={6}
                     value={profileForm.bio}
                     onChange={(e) =>
                       setProfileForm({ ...profileForm, bio: e.target.value })
                     }
                     className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] leading-relaxed"
                   />
-                </div>
-
-                {/* Prints Section Texts */}
-                <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-4">
-                  <span className="font-telemetry text-xs uppercase tracking-wider text-[var(--accent-primary)] block">
-                    Textblock: Kunstdrucke & Editionen
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                        DACHZEILE
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.printsSubtitle}
-                        onChange={(e) =>
-                          setProfileForm({
-                            ...profileForm,
-                            printsSubtitle: e.target.value
-                          })
-                        }
-                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                        ÜBERSCHRIFT
-                      </label>
-                      <input
-                        type="text"
-                        value={profileForm.printsTitle}
-                        onChange={(e) =>
-                          setProfileForm({
-                            ...profileForm,
-                            printsTitle: e.target.value
-                          })
-                        }
-                        className="w-full px-3 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-telemetry text-[var(--text-secondary)] mb-1">
-                      BESCHREIBUNGSTEXT
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={profileForm.printsText}
-                      onChange={(e) =>
-                        setProfileForm({ ...profileForm, printsText: e.target.value })
-                      }
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-primary)]"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -2938,7 +3068,7 @@ export default function StudioView({
                       handleAddEquipment();
                     }
                   }}
-                  placeholder="Neues Gerät / Objektiv hinzufügen (z. B. Leica SL3 oder Stativ)..."
+                  placeholder="Neuer Eintrag"
                   className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)]"
                 />
                 <button
@@ -2961,11 +3091,11 @@ export default function StudioView({
                 Kontaktseite & Social Media
               </span>
               <h3 className="font-editorial text-2xl sm:text-3xl text-[var(--text-primary)] mt-1">
-                Kontaktdaten, Instagram & Bluesky verknüpfen
+                Kontaktdaten & Social-Media-Profile verknüpfen
               </h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="space-y-1.5">
                 <label className="block text-xs font-telemetry uppercase text-[var(--text-secondary)]">
                   Einleitungstext auf der Kontaktseite
@@ -3027,7 +3157,7 @@ export default function StudioView({
                         }
                       })
                     }
-                    placeholder="@wolkenrose.petraschemmel"
+                    placeholder="Nutzername"
                     className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                   <input
@@ -3042,7 +3172,7 @@ export default function StudioView({
                         }
                       })
                     }
-                    placeholder="https://instagram.com/..."
+                    placeholder="URL"
                     className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                 </div>
@@ -3064,7 +3194,7 @@ export default function StudioView({
                         }
                       })
                     }
-                    placeholder="@wolkenrose.bsky.social"
+                    placeholder="Nutzername"
                     className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                   <input
@@ -3079,83 +3209,125 @@ export default function StudioView({
                         }
                       })
                     }
-                    placeholder="https://bsky.app/profile/..."
+                    placeholder="URL"
                     className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                 </div>
+              </div>
 
-                {/* YouTube (Optional) */}
-                <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
-                  <span className="font-telemetry text-xs uppercase text-[var(--text-secondary)] block">
-                    YouTube-Kanal (optional)
-                  </span>
-                  <input
-                    type="text"
-                    value={profileForm.socials.youtubeHandle}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        socials: {
-                          ...profileForm.socials,
-                          youtubeHandle: e.target.value
-                        }
-                      })
-                    }
-                    placeholder="Kanalname (leer lassen zum Ausblenden)"
-                    className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                  />
-                  <input
-                    type="text"
-                    value={profileForm.socials.youtubeUrl}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        socials: {
-                          ...profileForm.socials,
-                          youtubeUrl: e.target.value
-                        }
-                      })
-                    }
-                    placeholder="https://youtube.com/..."
-                    className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
-                  />
+              {/* Dynamic Custom Social Media Entries */}
+              <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="font-telemetry text-xs uppercase tracking-wider text-[var(--accent-primary)] block">
+                      Weitere Social-Media-Plattformen ({profileForm.socials.custom?.length || 0})
+                    </span>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      Füge beliebige weitere Plattformen oder Profile hinzu.
+                    </p>
+                  </div>
                 </div>
 
-                {/* Pinterest (Optional) */}
-                <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
-                  <span className="font-telemetry text-xs uppercase text-[var(--text-secondary)] block">
-                    Pinterest-Profil (optional)
-                  </span>
+                {Array.isArray(profileForm.socials.custom) &&
+                  profileForm.socials.custom.length > 0 && (
+                    <div className="space-y-3">
+                      {profileForm.socials.custom.map((item) => (
+                        <div
+                          key={item.id}
+                          className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]"
+                        >
+                          <input
+                            type="text"
+                            value={item.platform || ''}
+                            onChange={(e) =>
+                              handleUpdateCustomSocial(
+                                item.id,
+                                'platform',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Plattform"
+                            className="sm:col-span-3 px-3 py-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                          />
+                          <input
+                            type="text"
+                            value={item.handle || ''}
+                            onChange={(e) =>
+                              handleUpdateCustomSocial(
+                                item.id,
+                                'handle',
+                                e.target.value
+                              )
+                            }
+                            placeholder="Nutzername"
+                            className="sm:col-span-4 px-3 py-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                          />
+                          <input
+                            type="text"
+                            value={item.url || ''}
+                            onChange={(e) =>
+                              handleUpdateCustomSocial(
+                                item.id,
+                                'url',
+                                e.target.value
+                              )
+                            }
+                            placeholder="URL"
+                            className="sm:col-span-4 px-3 py-2 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                          />
+                          <div className="sm:col-span-1 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCustomSocial(item.id)}
+                              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 cursor-pointer"
+                              title="Eintrag entfernen"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                {/* Add New Custom Social Media Platform */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pt-2 border-t border-[var(--border-color)]">
                   <input
                     type="text"
-                    value={profileForm.socials.pinterestHandle}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        socials: {
-                          ...profileForm.socials,
-                          pinterestHandle: e.target.value
-                        }
-                      })
-                    }
-                    placeholder="@wolkenrose (leer lassen zum Ausblenden)"
-                    className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                    value={newSocialPlatform}
+                    onChange={(e) => setNewSocialPlatform(e.target.value)}
+                    placeholder="Plattform"
+                    className="sm:col-span-3 px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
                   <input
                     type="text"
-                    value={profileForm.socials.pinterestUrl}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        socials: {
-                          ...profileForm.socials,
-                          pinterestUrl: e.target.value
-                        }
-                      })
-                    }
-                    placeholder="https://pinterest.de/..."
-                    className="w-full px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                    value={newSocialHandle}
+                    onChange={(e) => setNewSocialHandle(e.target.value)}
+                    placeholder="Nutzername"
+                    className="sm:col-span-4 px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
                   />
+                  <input
+                    type="text"
+                    value={newSocialUrl}
+                    onChange={(e) => setNewSocialUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomSocial();
+                      }
+                    }}
+                    placeholder="URL"
+                    className="sm:col-span-3 px-3.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs text-[var(--text-primary)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSocial}
+                    style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                    className="sm:col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Hinzufügen</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -3179,7 +3351,7 @@ export default function StudioView({
       {/* ===================================================================== */}
       {subTab === 'design-colors' && theme && (
         <div className="space-y-10">
-          {/* Top Mode & Preset Bar */}
+          {/* Box 1: 1. Custom Themes */}
           <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-6">
               <div>
@@ -3187,7 +3359,7 @@ export default function StudioView({
                   Farbdesign, Darstellungsmodus & Schriftarten
                 </h2>
                 <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-                  Wähle eine abgestimmte Wolkenrose-Vorlage oder bestimme alle Hauptfarben und kostenlosen Schriftarten für die gesamte Webseite selbst.
+                  Wähle ein Theme aus, bearbeite Name, Schriftarten und Farben des ausgewählten Themes oder lege eigene Custom Themes an.
                 </p>
               </div>
 
@@ -3212,135 +3384,431 @@ export default function StudioView({
 
                 <button
                   type="button"
-                  onClick={() => handleApplyPreset(THEME_PRESETS[0])}
+                  onClick={handleResetAllThemes}
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-medium bg-[var(--surface-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Standard wiederherstellen</span>
+                  <span>Standard-Themes wiederherstellen</span>
                 </button>
+              </div>
+            </div>
+
+            {/* 1. Custom Themes */}
+            <div className="space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
+                    1. Custom Themes
+                  </span>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    Klicke auf ein Theme, um es zu aktivieren und unten seine Schriftarten, Farben oder seinen Namen anzupassen.
+                  </p>
+                </div>
 
                 <button
                   type="button"
-                  onClick={handleSaveThemeToServer}
-                  style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-semibold shadow-md hover:opacity-90 cursor-pointer"
+                  onClick={() => setShowNewThemeForm((prev) => !prev)}
+                  style={{
+                    borderColor: 'var(--accent-primary)',
+                    color: 'var(--accent-primary)',
+                    backgroundColor: 'var(--surface-subtle)'
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border hover:opacity-85 cursor-pointer self-start sm:self-auto"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Design & Schriften dauerhaft speichern</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Neues Theme hinzufügen</span>
                 </button>
               </div>
-            </div>
 
-            {/* One-Click Curated Presets */}
-            <div className="space-y-3">
-              <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
-                1. Kuratierte Design-Vorlagen (1-Klick-Aktivierung)
-              </span>
+              {showNewThemeForm && (
+                <form
+                  onSubmit={handleCreateNewTheme}
+                  className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--accent-primary)] flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+                >
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newThemeName}
+                    onChange={(e) => setNewThemeName(e.target.value)}
+                    placeholder="Name für das neue Theme"
+                    className="flex-1 px-4 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                  />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="submit"
+                      style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Mit aktuellen Farben & Schriften anlegen</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowNewThemeForm(false)}
+                      className="px-3 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+                    >
+                      Abbrechen
+                    </button>
+                  </div>
+                </form>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {THEME_PRESETS.map((preset) => (
-                  <button
-                    key={preset.name}
-                    type="button"
-                    onClick={() => handleApplyPreset(preset)}
-                    className="text-left p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-all space-y-3 cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        style={{ backgroundColor: preset.theme.accentPrimary }}
-                        className="w-6 h-6 rounded-full border border-white/20 shadow-sm"
-                      />
-                      <span
-                        style={{ backgroundColor: preset.theme.accentSecondary }}
-                        className="w-6 h-6 rounded-full border border-white/20 shadow-sm"
-                      />
-                      <span
-                        style={{ backgroundColor: preset.theme.darkBgPrimary }}
-                        className="w-6 h-6 rounded-full border border-white/20 shadow-sm"
-                      />
-                      <span
-                        style={{ backgroundColor: preset.theme.lightBgPrimary }}
-                        className="w-6 h-6 rounded-full border border-black/20 shadow-sm"
-                      />
+                {themesList.map((ct) => {
+                  const isSelected = activeCustomTheme?.id === ct.id;
+                  const ctTheme = ct.theme || {};
+
+                  return (
+                    <div
+                      key={ct.id}
+                      onClick={() => handleSelectCustomTheme(ct)}
+                      className={`text-left p-4 rounded-2xl bg-[var(--bg-primary)] border transition-all space-y-3 cursor-pointer group flex flex-col justify-between ${
+                        isSelected
+                          ? 'border-[var(--accent-primary)] ring-2 ring-[var(--accent-primary)]/30'
+                          : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]'
+                      }`}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              style={{ backgroundColor: ctTheme.accentPrimary }}
+                              className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                              title={`Primärakzent: ${ctTheme.accentPrimary}`}
+                            />
+                            <span
+                              style={{ backgroundColor: ctTheme.accentSecondary }}
+                              className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                              title={`Sekundärakzent: ${ctTheme.accentSecondary}`}
+                            />
+                            <span
+                              style={{ backgroundColor: ctTheme.darkBgPrimary }}
+                              className="w-5 h-5 rounded-full border border-white/20 shadow-sm"
+                              title={`Dunkelmodus-Hintergrund: ${ctTheme.darkBgPrimary}`}
+                            />
+                            <span
+                              style={{ backgroundColor: ctTheme.lightBgPrimary }}
+                              className="w-5 h-5 rounded-full border border-black/20 shadow-sm"
+                              title={`Hellmodus-Hintergrund: ${ctTheme.lightBgPrimary}`}
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {isSelected && (
+                              <span
+                                style={{
+                                  backgroundColor: 'var(--accent-primary)',
+                                  color: '#0B0E0C'
+                                }}
+                                className="px-2 py-0.5 rounded-full text-[10px] font-telemetry font-bold"
+                              >
+                                Aktiv
+                              </span>
+                            )}
+                            {themesList.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteThemeEntry(ct.id, ct.name);
+                                }}
+                                className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 cursor-pointer"
+                                title="Theme löschen"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-editorial text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                            {ct.name}
+                          </h4>
+                          {ct.description && (
+                            <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-1">
+                              {ct.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-[var(--border-color)] flex items-center justify-between text-[10px] font-telemetry text-[var(--text-secondary)]">
+                        <span className="truncate">
+                          {ctTheme.fontSerif || 'Cormorant Garamond'} · {ctTheme.fontSans || 'Plus Jakarta Sans'}
+                        </span>
+                        <span className="uppercase shrink-0 ml-1">
+                          {ctTheme.defaultMode === 'light' ? 'Hell' : 'Dunkel'}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-editorial text-lg font-semibold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                        {preset.name}
-                      </h4>
-                      <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-1">
-                        {preset.description}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
+
+          {/* Separate Box: Theme bearbeiten & umbenennen (with the SINGLE Save Theme button) */}
+          {activeCustomTheme && (
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-5 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-color)] pb-4">
+                <div>
+                  <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
+                    Ausgewähltes Theme
+                  </span>
+                  <h3 className="font-editorial text-2xl sm:text-3xl text-[var(--text-primary)] mt-0.5">
+                    Theme bearbeiten & umbenennen
+                  </h3>
+                </div>
+                <span className="text-xs text-[var(--text-secondary)]">
+                  {isThemeDirty
+                    ? 'Ungespeicherte Änderungen an diesem Theme vorhanden'
+                    : 'Alle Einstellungen dieses Themes sind gespeichert'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div className="md:col-span-4 space-y-1.5">
+                  <label className="block text-xs font-telemetry uppercase text-[var(--text-secondary)]">
+                    Name des Themes
+                  </label>
+                  <input
+                    type="text"
+                    value={editingThemeName}
+                    onChange={(e) => setEditingThemeName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm font-semibold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                  />
+                </div>
+
+                <div className="md:col-span-5 space-y-1.5">
+                  <label className="block text-xs font-telemetry uppercase text-[var(--text-secondary)]">
+                    Kurzbeschreibung (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={editingThemeDescription}
+                    onChange={(e) => setEditingThemeDescription(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                  />
+                </div>
+
+                <div className="md:col-span-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={!isThemeDirty}
+                    onClick={handleSaveThemeToServer}
+                    style={
+                      isThemeDirty
+                        ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
+                        : undefined
+                    }
+                    className={`w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      isThemeDirty
+                        ? 'shadow-md hover:opacity-90 cursor-pointer'
+                        : 'bg-[var(--bg-primary)] text-[var(--text-secondary)]/50 border border-[var(--border-color)] opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>
+                      {isThemeDirty ? 'Theme speichern' : 'Gespeichert'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Font Customization Section */}
           <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <div>
               <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
-                2. Typografie & Kostenlose Schriftarten
+                2. Typografie & Schriftarten
               </span>
               <h3 className="font-editorial text-3xl text-[var(--text-primary)] mt-1">
-                Schriftarten der Webseite auswählen
+                Schriftarten der Webseite auswählen (mit oder ohne Serifen)
               </h3>
               <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
-                Wähle aus bewährten, frei verwendbaren Google Fonts für deine Überschriften, Fließtexte und technischen EXIF-Angaben.
+                Wähle zwischen Schriftarten mit Serifen oder ohne Serifen für Überschriften und Fließtexte sowie einer Monospace-Schrift für technische Angaben.
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Heading / Editorial Font */}
-              <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
-                <label className="block text-xs font-semibold text-[var(--text-primary)]">
-                  Überschriften & Titel-Schriftart
-                </label>
-                <select
-                  value={theme.fontSerif || 'Cormorant Garamond'}
-                  onChange={(e) =>
-                    handleColorFieldChange('fontSerif', e.target.value)
-                  }
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] cursor-pointer"
-                >
-                  {FREE_FONT_OPTIONS.serif.map((f) => (
-                    <option key={f.name} value={f.name}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="font-editorial text-2xl text-[var(--text-primary)] pt-2 border-t border-[var(--border-color)]">
-                  Wolkenrose - Fotografie
-                </p>
-              </div>
+              {(() => {
+                const isHeadingSans = FREE_FONT_OPTIONS.sans.some(
+                  (f) => f.name === theme.fontSerif
+                );
+                const headingFontList = isHeadingSans
+                  ? FREE_FONT_OPTIONS.sans
+                  : FREE_FONT_OPTIONS.serif;
+
+                return (
+                  <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="block text-xs font-semibold text-[var(--text-primary)]">
+                        Überschriften & Titel-Schriftart
+                      </label>
+                    </div>
+
+                    {/* Serif / Sans-Serif Toggle for Headings */}
+                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isHeadingSans) {
+                            handleColorFieldChange(
+                              'fontSerif',
+                              FREE_FONT_OPTIONS.serif[0].name
+                            );
+                          }
+                        }}
+                        style={
+                          !isHeadingSans
+                            ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
+                            : undefined
+                        }
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                          !isHeadingSans
+                            ? ''
+                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        }`}
+                      >
+                        Mit Serifen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isHeadingSans) {
+                            handleColorFieldChange(
+                              'fontSerif',
+                              FREE_FONT_OPTIONS.sans[0].name
+                            );
+                          }
+                        }}
+                        style={
+                          isHeadingSans
+                            ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
+                            : undefined
+                        }
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                          isHeadingSans
+                            ? ''
+                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        }`}
+                      >
+                        Ohne Serifen
+                      </button>
+                    </div>
+
+                    <select
+                      value={theme.fontSerif || 'Cormorant Garamond'}
+                      onChange={(e) =>
+                        handleColorFieldChange('fontSerif', e.target.value)
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] cursor-pointer"
+                    >
+                      {headingFontList.map((f) => (
+                        <option key={f.name} value={f.name}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="font-editorial text-2xl text-[var(--text-primary)] pt-2 border-t border-[var(--border-color)]">
+                      Wolkenrose - Fotografie
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Body / Sans Font */}
-              <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
-                <label className="block text-xs font-semibold text-[var(--text-primary)]">
-                  Fließtext & Navigation
-                </label>
-                <select
-                  value={theme.fontSans || 'Plus Jakarta Sans'}
-                  onChange={(e) =>
-                    handleColorFieldChange('fontSans', e.target.value)
-                  }
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] cursor-pointer"
-                >
-                  {FREE_FONT_OPTIONS.sans.map((f) => (
-                    <option key={f.name} value={f.name}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-sm text-[var(--text-secondary)] pt-2 border-t border-[var(--border-color)] leading-relaxed">
-                  Jedes Bild erzählt eine eigene Geschichte aus den Bergen, Wäldern und Mooren.
-                </p>
-              </div>
+              {(() => {
+                const isBodySerif = FREE_FONT_OPTIONS.serif.some(
+                  (f) => f.name === theme.fontSans
+                );
+                const bodyFontList = isBodySerif
+                  ? FREE_FONT_OPTIONS.serif
+                  : FREE_FONT_OPTIONS.sans;
+
+                return (
+                  <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
+                    <label className="block text-xs font-semibold text-[var(--text-primary)]">
+                      Fließtext & Navigation
+                    </label>
+
+                    {/* Sans-Serif / Serif Toggle for Body */}
+                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isBodySerif) {
+                            handleColorFieldChange(
+                              'fontSans',
+                              FREE_FONT_OPTIONS.sans[0].name
+                            );
+                          }
+                        }}
+                        style={
+                          !isBodySerif
+                            ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
+                            : undefined
+                        }
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                          !isBodySerif
+                            ? ''
+                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        }`}
+                      >
+                        Ohne Serifen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isBodySerif) {
+                            handleColorFieldChange(
+                              'fontSans',
+                              FREE_FONT_OPTIONS.serif[0].name
+                            );
+                          }
+                        }}
+                        style={
+                          isBodySerif
+                            ? { backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }
+                            : undefined
+                        }
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                          isBodySerif
+                            ? ''
+                            : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        }`}
+                      >
+                        Mit Serifen
+                      </button>
+                    </div>
+
+                    <select
+                      value={theme.fontSans || 'Plus Jakarta Sans'}
+                      onChange={(e) =>
+                        handleColorFieldChange('fontSans', e.target.value)
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] cursor-pointer"
+                    >
+                      {bodyFontList.map((f) => (
+                        <option key={f.name} value={f.name}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-sm text-[var(--text-secondary)] pt-2 border-t border-[var(--border-color)] leading-relaxed">
+                      Jedes Bild erzählt eine eigene Geschichte aus den Bergen, Wäldern und Mooren.
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Technical / Monospace Font */}
               <div className="p-5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] space-y-3">
                 <label className="block text-xs font-semibold text-[var(--text-primary)]">
-                  EXIF-Daten & Koordinaten (Monospace)
+                  EXIF-Daten & Technische Angaben (Monospace)
                 </label>
                 <select
                   value={theme.fontMono || 'JetBrains Mono'}
@@ -3356,13 +3824,13 @@ export default function StudioView({
                   ))}
                 </select>
                 <p className="font-telemetry text-xs text-[var(--accent-primary)] pt-2 border-t border-[var(--border-color)]">
-                  Hasselblad X2D · 38mm · f/11 · 1/15s · ISO 64
+                  Canon EOS R6 Mark II · 38mm · f/8 · 1/60s · ISO 100
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Detailed Color Pickers Grid */}
+          {/* Detailed Color & Background Palettes Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Column 1: Brand Accent Colors & Default Mode */}
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-6 shadow-sm">
@@ -3474,8 +3942,8 @@ export default function StudioView({
               </div>
             </div>
 
-            {/* Column 2: Dark Mode Custom Colors */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-6 shadow-sm">
+            {/* Column 2: Dark Mode Palette (Typical Dark Mode Background Selection + Text Colors) */}
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
@@ -3494,16 +3962,68 @@ export default function StudioView({
                 </button>
               </div>
 
-              <div className="space-y-3.5">
+              {/* Typical Dark Mode Background Selection */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-[var(--text-primary)]">
+                  Hintergrundfarbe im Dunkelmodus (Auswahl)
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {DARK_BG_OPTIONS.map((opt) => {
+                    const isSelected =
+                      String(theme.darkBgPrimary || '').toLowerCase() ===
+                      opt.primary.toLowerCase();
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() =>
+                          handleBackgroundPairChange(
+                            'darkBgPrimary',
+                            'darkBgSecondary',
+                            opt.primary,
+                            opt.secondary
+                          )
+                        }
+                        className={`p-3 rounded-xl bg-[var(--bg-primary)] border flex items-center justify-between gap-3 text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-[var(--accent-primary)] ring-1 ring-[var(--accent-primary)]/40'
+                            : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex items-center -space-x-1.5">
+                            <span
+                              style={{ backgroundColor: opt.primary }}
+                              className="w-6 h-6 rounded-full border border-white/25 shadow-sm"
+                              title={`Seite: ${opt.primary}`}
+                            />
+                            <span
+                              style={{ backgroundColor: opt.secondary }}
+                              className="w-6 h-6 rounded-full border border-white/25 shadow-sm"
+                              title={`Karten: ${opt.secondary}`}
+                            />
+                          </div>
+                          <div>
+                            <span className="block text-xs font-medium text-[var(--text-primary)]">
+                              {opt.label}
+                            </span>
+                            <span className="block font-telemetry text-[10px] text-[var(--text-secondary)]">
+                              {opt.primary} · {opt.secondary}
+                            </span>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Dark Mode Text Colors */}
+              <div className="space-y-2.5 pt-2 border-t border-[var(--border-color)]">
                 {[
-                  {
-                    key: 'darkBgPrimary',
-                    label: 'Haupt-Hintergrund (Seite)'
-                  },
-                  {
-                    key: 'darkBgSecondary',
-                    label: 'Karten- & Galerie-Oberfläche'
-                  },
                   {
                     key: 'darkTextPrimary',
                     label: 'Haupt-Textfarbe & Überschriften'
@@ -3515,7 +4035,7 @@ export default function StudioView({
                 ].map((item) => (
                   <div
                     key={item.key}
-                    className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
+                    className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
                   >
                     <div className="space-y-0.5">
                       <span className="block text-xs font-medium text-[var(--text-primary)]">
@@ -3529,15 +4049,15 @@ export default function StudioView({
                       type="color"
                       value={theme[item.key]}
                       onChange={(e) => handleColorFieldChange(item.key, e.target.value)}
-                      className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
+                      className="w-9 h-9 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
                     />
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Column 3: Light Mode Custom Colors */}
-            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-6 shadow-sm">
+            {/* Column 3: Light Mode Palette (Typical Light Mode Background Selection + Text Colors) */}
+            <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-6 space-y-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
@@ -3556,16 +4076,68 @@ export default function StudioView({
                 </button>
               </div>
 
-              <div className="space-y-3.5">
+              {/* Typical Light Mode Background Selection */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-[var(--text-primary)]">
+                  Hintergrundfarbe im Hellmodus (Auswahl)
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  {LIGHT_BG_OPTIONS.map((opt) => {
+                    const isSelected =
+                      String(theme.lightBgPrimary || '').toLowerCase() ===
+                      opt.primary.toLowerCase();
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() =>
+                          handleBackgroundPairChange(
+                            'lightBgPrimary',
+                            'lightBgSecondary',
+                            opt.primary,
+                            opt.secondary
+                          )
+                        }
+                        className={`p-3 rounded-xl bg-[var(--bg-primary)] border flex items-center justify-between gap-3 text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-[var(--accent-primary)] ring-1 ring-[var(--accent-primary)]/40'
+                            : 'border-[var(--border-color)] hover:border-[var(--accent-primary)]/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex items-center -space-x-1.5">
+                            <span
+                              style={{ backgroundColor: opt.primary }}
+                              className="w-6 h-6 rounded-full border border-black/20 shadow-sm"
+                              title={`Seite: ${opt.primary}`}
+                            />
+                            <span
+                              style={{ backgroundColor: opt.secondary }}
+                              className="w-6 h-6 rounded-full border border-black/20 shadow-sm"
+                              title={`Karten: ${opt.secondary}`}
+                            />
+                          </div>
+                          <div>
+                            <span className="block text-xs font-medium text-[var(--text-primary)]">
+                              {opt.label}
+                            </span>
+                            <span className="block font-telemetry text-[10px] text-[var(--text-secondary)]">
+                              {opt.primary} · {opt.secondary}
+                            </span>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Light Mode Text Colors */}
+              <div className="space-y-2.5 pt-2 border-t border-[var(--border-color)]">
                 {[
-                  {
-                    key: 'lightBgPrimary',
-                    label: 'Haupt-Hintergrund (Papier-Ton)'
-                  },
-                  {
-                    key: 'lightBgSecondary',
-                    label: 'Karten- & Galerie-Oberfläche'
-                  },
                   {
                     key: 'lightTextPrimary',
                     label: 'Haupt-Textfarbe & Überschriften'
@@ -3577,7 +4149,7 @@ export default function StudioView({
                 ].map((item) => (
                   <div
                     key={item.key}
-                    className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
+                    className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-between gap-3"
                   >
                     <div className="space-y-0.5">
                       <span className="block text-xs font-medium text-[var(--text-primary)]">
@@ -3591,11 +4163,69 @@ export default function StudioView({
                       type="color"
                       value={theme[item.key]}
                       onChange={(e) => handleColorFieldChange(item.key, e.target.value)}
-                      className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
+                      className="w-9 h-9 rounded-xl cursor-pointer border-0 bg-transparent shrink-0"
                     />
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unsaved Theme Changes Confirmation Popup Modal */}
+      {unsavedThemeModalAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="max-w-md w-full rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-color)] p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div className="space-y-2">
+              <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-primary)] block">
+                Ungespeicherte Änderungen
+              </span>
+              <h3 className="font-editorial text-2xl sm:text-3xl text-[var(--text-primary)]">
+                Änderungen am Theme speichern?
+              </h3>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+                Du hast Schriftarten, Farben oder Name/Beschreibung des Themes{' '}
+                <strong className="text-[var(--text-primary)]">
+                  „{editingThemeName || activeCustomTheme?.name}“
+                </strong>{' '}
+                verändert, ohne zu speichern. Möchtest du die Änderungen vor dem Verlassen speichern oder verwerfen?
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setUnsavedThemeModalAction(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-medium bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-color)] cursor-pointer"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const action = unsavedThemeModalAction;
+                  handleRevertThemeChanges();
+                  setUnsavedThemeModalAction(null);
+                  if (action) action();
+                }}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 cursor-pointer"
+              >
+                Änderungen verwerfen
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const action = unsavedThemeModalAction;
+                  await handleSaveThemeToServer();
+                  setUnsavedThemeModalAction(null);
+                  if (action) action();
+                }}
+                style={{ backgroundColor: 'var(--accent-primary)', color: '#0B0E0C' }}
+                className="px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md hover:opacity-90 cursor-pointer"
+              >
+                Änderungen speichern
+              </button>
             </div>
           </div>
         </div>

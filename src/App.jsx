@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import GalleryView from './components/GalleryView';
@@ -25,6 +25,9 @@ export default function App() {
   const [studioSubTab, setStudioSubTab] = useState('upload-photo');
 
   const [theme, setTheme] = useState(initialData.theme);
+  const [customThemes, setCustomThemes] = useState(
+    initialData.customThemes || []
+  );
   const [colorMode, setColorMode] = useState(() => {
     const saved = localStorage.getItem('wolkenrose_color_mode');
     return saved === 'light' || saved === 'dark'
@@ -44,6 +47,7 @@ export default function App() {
   const [lightboxPool, setLightboxPool] = useState(null);
   const [selectedPost, setSelectedPost] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
+  const studioLeaveGuardRef = useRef(null);
 
   // Load state from backend API
   useEffect(() => {
@@ -64,6 +68,9 @@ export default function App() {
           if (!localStorage.getItem('wolkenrose_color_mode') && data.theme.defaultMode) {
             setColorMode(data.theme.defaultMode);
           }
+        }
+        if (Array.isArray(data.customThemes) && data.customThemes.length > 0) {
+          setCustomThemes(data.customThemes);
         }
         if (data.profile) setProfile({ ...initialData.profile, ...data.profile });
         if (Array.isArray(data.photos)) setPhotos(data.photos);
@@ -116,8 +123,8 @@ export default function App() {
     const fontSerif = theme.fontSerif || 'Cormorant Garamond';
     const fontSans = theme.fontSans || 'Plus Jakarta Sans';
     const fontMono = theme.fontMono || 'JetBrains Mono';
-    root.style.setProperty('--font-serif', `'${fontSerif}', Georgia, serif`);
-    root.style.setProperty('--font-sans', `'${fontSans}', system-ui, sans-serif`);
+    root.style.setProperty('--font-serif', `'${fontSerif}', sans-serif, Georgia, serif`);
+    root.style.setProperty('--font-sans', `'${fontSans}', system-ui, sans-serif, Georgia, serif`);
     root.style.setProperty('--font-mono', `'${fontMono}', monospace`);
   }, [theme, colorMode]);
 
@@ -137,6 +144,16 @@ export default function App() {
   const handleUpdateTheme = async (nextTheme, persistToServer = true) => {
     setTheme(nextTheme);
     if (persistToServer) {
+      if (nextTheme.activeThemeId) {
+        const { activeThemeId, ...themeValues } = nextTheme;
+        setCustomThemes((prev) =>
+          prev.map((ct) =>
+            ct.id === activeThemeId
+              ? { ...ct, theme: { ...ct.theme, ...themeValues } }
+              : ct
+          )
+        );
+      }
       try {
         const res = await fetch('/api/theme', {
           method: 'PUT',
@@ -145,11 +162,139 @@ export default function App() {
         });
         if (res.ok) {
           const saved = await res.json();
-          setTheme(saved);
+          if (saved.theme) {
+            setTheme(saved.theme);
+          } else {
+            setTheme(saved);
+          }
+          if (Array.isArray(saved.customThemes)) {
+            setCustomThemes(saved.customThemes);
+          }
         }
       } catch {
         // Keep local state if offline
       }
+    }
+  };
+
+  const handleCreateCustomTheme = async ({ name, description, theme: themeValues }) => {
+    try {
+      const res = await fetch('/api/custom-themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, theme: themeValues })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.theme) setTheme(data.theme);
+        if (Array.isArray(data.customThemes)) setCustomThemes(data.customThemes);
+        return data.customTheme;
+      }
+    } catch {
+      // Fallback local state if offline
+    }
+    const fallbackId = `theme-${Date.now()}`;
+    const cleanValues = { ...theme, ...(themeValues || {}) };
+    delete cleanValues.activeThemeId;
+    const newEntry = {
+      id: fallbackId,
+      name: (name || 'Neues Custom Theme').trim(),
+      description: (description || '').trim(),
+      theme: cleanValues
+    };
+    setCustomThemes((prev) => [...prev, newEntry]);
+    setTheme({ ...cleanValues, activeThemeId: fallbackId });
+    return newEntry;
+  };
+
+  const handleSaveCustomTheme = async (id, { name, description, theme: themeValues }) => {
+    const cleanValues = { ...theme, ...(themeValues || {}) };
+    delete cleanValues.activeThemeId;
+
+    setCustomThemes((prev) =>
+      prev.map((ct) =>
+        ct.id === id
+          ? {
+              ...ct,
+              name: name !== undefined ? name.trim() || ct.name : ct.name,
+              description:
+                description !== undefined ? description.trim() : ct.description,
+              theme: cleanValues
+            }
+          : ct
+      )
+    );
+    setTheme({ ...cleanValues, activeThemeId: id });
+
+    try {
+      const res = await fetch(`/api/custom-themes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          description,
+          theme: cleanValues,
+          setActive: true
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.theme) setTheme(data.theme);
+        if (Array.isArray(data.customThemes)) setCustomThemes(data.customThemes);
+      }
+    } catch {
+      // Keep local state if offline
+    }
+  };
+
+  const handleDeleteCustomTheme = async (id) => {
+    if (customThemes.length <= 1) return;
+    try {
+      const res = await fetch(`/api/custom-themes/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.theme) {
+          setTheme(data.theme);
+          if (data.theme.defaultMode) handleSetColorMode(data.theme.defaultMode);
+        }
+        if (Array.isArray(data.customThemes)) setCustomThemes(data.customThemes);
+        return;
+      }
+    } catch {
+      // Fallback local state if offline
+    }
+    const remaining = customThemes.filter((ct) => ct.id !== id);
+    setCustomThemes(remaining);
+    if (theme.activeThemeId === id && remaining[0]) {
+      const next = { ...remaining[0].theme, activeThemeId: remaining[0].id };
+      setTheme(next);
+      if (next.defaultMode) handleSetColorMode(next.defaultMode);
+    }
+  };
+
+  const handleResetCustomThemes = async () => {
+    try {
+      const res = await fetch('/api/custom-themes/reset', {
+        method: 'POST'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.theme) {
+          setTheme(data.theme);
+          if (data.theme.defaultMode) handleSetColorMode(data.theme.defaultMode);
+        }
+        if (Array.isArray(data.customThemes)) setCustomThemes(data.customThemes);
+        return;
+      }
+    } catch {
+      // Fallback local state if offline
+    }
+    setCustomThemes(initialData.customThemes);
+    setTheme(initialData.theme);
+    if (initialData.theme.defaultMode) {
+      handleSetColorMode(initialData.theme.defaultMode);
     }
   };
 
@@ -339,8 +484,15 @@ export default function App() {
     }
   };
 
-  // Scroll to top when switching main tabs
+  // Scroll to top when switching main tabs (guards against unsaved theme edits in Studio)
   const handleNavigate = (tab) => {
+    if (activeTab === 'studio' && tab !== 'studio' && studioLeaveGuardRef.current) {
+      const intercepted = studioLeaveGuardRef.current(() => {
+        setActiveTab(tab);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      if (intercepted) return;
+    }
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -368,7 +520,10 @@ export default function App() {
     });
     if (!res.ok) throw new Error('Foto konnte nicht gespeichert werden');
     const created = await res.json();
-    setPhotos((prev) => [created, ...prev]);
+    setPhotos((prev) => [
+      created,
+      ...(created.featured ? prev.map((p) => ({ ...p, featured: false })) : prev)
+    ]);
     if (created.category && !categories.includes(created.category)) {
       setCategories((prev) => [...prev, created.category]);
     }
@@ -384,7 +539,13 @@ export default function App() {
     });
     if (!res.ok) throw new Error('Foto konnte nicht aktualisiert werden');
     const updated = await res.json();
-    setPhotos((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    setPhotos((prev) =>
+      prev.map((p) => {
+        if (p.id === id) return updated;
+        if (updated.featured) return { ...p, featured: false };
+        return p;
+      })
+    );
     if (selectedPhoto?.id === id) setSelectedPhoto(updated);
     return updated;
   };
@@ -505,9 +666,17 @@ export default function App() {
             onSelectPhoto={handleOpenGalleryPhoto}
             onSelectPost={setSelectedPost}
             theme={theme}
+            customThemes={customThemes}
             onUpdateTheme={handleUpdateTheme}
+            onCreateCustomTheme={handleCreateCustomTheme}
+            onSaveCustomTheme={handleSaveCustomTheme}
+            onDeleteCustomTheme={handleDeleteCustomTheme}
+            onResetCustomThemes={handleResetCustomThemes}
             colorMode={colorMode}
             onSetColorMode={handleSetColorMode}
+            onRegisterLeaveGuard={(fn) => {
+              studioLeaveGuardRef.current = fn;
+            }}
           />
         )}
 

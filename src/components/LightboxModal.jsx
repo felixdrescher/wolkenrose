@@ -6,8 +6,7 @@ import {
   MapPin,
   Camera,
   Calendar,
-  Download,
-  Compass
+  Download
 } from 'lucide-react';
 
 function hasAnyExif(exif) {
@@ -166,19 +165,13 @@ export default function LightboxModal({
                 )}
               </div>
             )}
-            {photo.coordinates && (
-              <div className="flex items-center gap-1.5 font-telemetry text-[11px] text-[var(--text-secondary)]">
-                <Compass className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-                <span>Koordinaten: {photo.coordinates}</span>
-              </div>
-            )}
           </div>
 
           {/* Story Behind the Shot */}
           {photo.story && (
             <div className="space-y-2 bg-[var(--bg-primary)] p-4 rounded-xl border border-[var(--border-color)]">
               <span className="font-telemetry text-[10px] uppercase tracking-widest text-[var(--accent-primary)] block">
-                Geschichte & Entstehung
+                Beschreibung
               </span>
               <p className="text-sm text-[var(--text-primary)] opacity-90 leading-relaxed">
                 {photo.story}

@@ -26,15 +26,6 @@ function formatFocalLength(focal) {
   return `${Math.round(focal)}mm`;
 }
 
-function formatCoordinates(lat, lon) {
-  if (typeof lat !== 'number' || typeof lon !== 'number' || Number.isNaN(lat) || Number.isNaN(lon)) {
-    return '';
-  }
-  const latDir = lat >= 0 ? 'N' : 'S';
-  const lonDir = lon >= 0 ? 'O' : 'W';
-  return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lon).toFixed(4)}° ${lonDir}`;
-}
-
 function formatExifDate(rawDate) {
   if (!rawDate) return { dateTaken: '', timeTaken: '' };
   let dateObj = null;
@@ -109,7 +100,7 @@ async function reverseGeocode(lat, lon) {
 }
 
 /**
- * Extracts EXIF optical parameters, creation date/time, GPS coordinates,
+ * Extracts EXIF optical parameters, creation date/time,
  * and place of creation from an image File object.
  */
 export async function extractImageMetadata(file) {
@@ -117,7 +108,6 @@ export async function extractImageMetadata(file) {
     foundExif: false,
     dateTaken: '',
     timeTaken: '',
-    coordinates: '',
     location: '',
     exif: {
       camera: '',
@@ -189,10 +179,9 @@ export async function extractImageMetadata(file) {
       parsed.DateTimeOriginal || parsed.CreateDate || parsed.ModifyDate;
     const { dateTaken, timeTaken } = formatExifDate(rawDate);
 
-    // 5. GPS Coordinates & Place of creation
+    // 5. Place of creation
     const lat = parsed.latitude;
     const lon = parsed.longitude;
-    const coordinates = formatCoordinates(lat, lon);
 
     // Check IPTC / XMP location fields first
     const iptcParts = [
@@ -220,7 +209,6 @@ export async function extractImageMetadata(file) {
     };
     result.dateTaken = dateTaken;
     result.timeTaken = timeTaken;
-    result.coordinates = coordinates;
     result.location = location;
 
     const noteParts = [
@@ -243,7 +231,6 @@ export async function extractImageMetadata(file) {
         shutterSpeed ||
         iso ||
         dateTaken ||
-        coordinates ||
         location
     );
 

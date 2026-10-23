@@ -14,51 +14,44 @@ export default function ContactSection({ profile }) {
   const [formState, setFormState] = useState({
     name: '',
     email: '',
-    subject: 'Kunstdruck-Anfrage',
+    subject: 'Allgemeine Nachricht',
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
 
   const socials = profile?.socials || {};
+  const customSocials = Array.isArray(socials.custom) ? socials.custom : [];
 
   const socialLinks = [
-    {
-      id: 'instagram',
-      name: 'Instagram',
-      handle: socials.instagramHandle || profile?.instagram || '@wolkenrose.petraschemmel',
-      url: socials.instagramUrl || 'https://instagram.com',
-      description: 'Aktuelle Aufnahmen, Storys & Einblicke von unterwegs'
-    },
-    {
-      id: 'bluesky',
-      name: 'Bluesky',
-      handle: socials.blueskyHandle || '@wolkenrose.bsky.social',
-      url: socials.blueskyUrl || 'https://bsky.app',
-      description: 'Fotografischer Austausch, Naturbeobachtungen & Kurznotizen'
-    },
-    ...(socials.youtubeUrl || socials.youtubeHandle
+    ...(socials.instagramHandle || socials.instagramUrl
       ? [
           {
-            id: 'youtube',
-            name: 'YouTube',
-            handle: socials.youtubeHandle || 'Wolkenrose - Fotografie',
-            url: socials.youtubeUrl,
-            description: 'Videotagebücher & Making-of-Berichte aus der Natur'
+            id: 'instagram',
+            name: 'Instagram',
+            handle: socials.instagramHandle || '',
+            url: socials.instagramUrl || 'https://instagram.com'
           }
         ]
       : []),
-    ...(socials.pinterestUrl || socials.pinterestHandle
+    ...(socials.blueskyHandle || socials.blueskyUrl
       ? [
           {
-            id: 'pinterest',
-            name: 'Pinterest',
-            handle: socials.pinterestHandle || '@wolkenrose',
-            url: socials.pinterestUrl,
-            description: 'Kuratierte Moodboards & Fine-Art-Sammlungen'
+            id: 'bluesky',
+            name: 'Bluesky',
+            handle: socials.blueskyHandle || '',
+            url: socials.blueskyUrl || 'https://bsky.app'
           }
         ]
-      : [])
-  ].filter((s) => s.handle || s.url);
+      : []),
+    ...customSocials
+      .filter((item) => item && (item.platform || item.handle || item.url))
+      .map((item, idx) => ({
+        id: item.id || `custom-social-${idx}`,
+        name: item.platform || 'Social Media',
+        handle: item.handle || '',
+        url: item.url || '#'
+      }))
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -66,7 +59,7 @@ export default function ContactSection({ profile }) {
     setFormState({
       name: '',
       email: '',
-      subject: 'Kunstdruck-Anfrage',
+      subject: 'Allgemeine Nachricht',
       message: ''
     });
   };
@@ -76,14 +69,14 @@ export default function ContactSection({ profile }) {
       {/* Header */}
       <div className="border-b border-[var(--border-color)] pb-8 space-y-3">
         <span className="font-telemetry text-xs uppercase tracking-[0.25em] text-[var(--accent-primary)] block">
-          Wolkenrose · Kontakt & Soziale Netzwerke
+          Wolkenrose · Kontakt & Social Media
         </span>
         <h1 className="font-editorial text-4xl sm:text-6xl font-medium text-[var(--text-primary)]">
           Kontakt aufnehmen
         </h1>
         <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl leading-relaxed">
           {profile?.contactIntro ||
-            'Du interessierst dich für einen handsignierten Fine-Art-Kunstdruck, eine Ausstellung oder möchtest dich über Naturfotografie austauschen? Ich freue mich über deine Nachricht.'}
+            'Du hast Fragen zu meinen Fotografien, einer Ausstellung oder möchtest dich über Naturfotografie austauschen? Ich freue mich über deine Nachricht.'}
         </p>
       </div>
 
@@ -95,7 +88,7 @@ export default function ContactSection({ profile }) {
             <div className="flex items-center gap-2 text-[var(--accent-primary)]">
               <Sparkles className="w-4 h-4" />
               <span className="font-telemetry text-xs uppercase tracking-widest">
-                Atelier Wolkenrose
+                Fotografie by Wolkenrose
               </span>
             </div>
 
@@ -105,7 +98,7 @@ export default function ContactSection({ profile }) {
 
             <div className="space-y-3.5 pt-2">
               <a
-                href={`mailto:${profile?.email || 'atelier@wolkenrose-fotografie.de'}`}
+                href={`mailto:${profile?.email || 'Hinterlege eine E-Mail-Adresse im Adminbereich'}`}
                 className="flex items-center gap-3.5 p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-colors group"
               >
                 <div
@@ -123,7 +116,7 @@ export default function ContactSection({ profile }) {
                     E-Mail-Adresse
                   </span>
                   <span className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
-                    {profile?.email || 'atelier@wolkenrose-fotografie.de'}
+                    {profile?.email || 'Hinterlege eine E-Mail-Adresse im Adminbereich'}
                   </span>
                 </div>
               </a>
@@ -142,7 +135,7 @@ export default function ContactSection({ profile }) {
                   </div>
                   <div>
                     <span className="block font-telemetry text-[10px] uppercase text-[var(--text-secondary)]">
-                      Telefon / Atelier
+                      Telefon 
                     </span>
                     <span className="text-sm font-medium text-[var(--text-primary)]">
                       {profile.phone}
@@ -167,7 +160,7 @@ export default function ContactSection({ profile }) {
                     Standort
                   </span>
                   <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {profile?.location || 'Voralpenland & Unterwegs'}
+                    {profile?.location || 'Setze einen Standort im Adminbereich'}
                   </span>
                 </div>
               </div>
@@ -178,10 +171,10 @@ export default function ContactSection({ profile }) {
           <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-3xl p-7 space-y-5 shadow-sm">
             <div>
               <span className="font-telemetry text-xs uppercase tracking-widest text-[var(--accent-secondary)] block">
-                Folge meiner Arbeit
+                folge mir auf Social Media
               </span>
               <h2 className="font-editorial text-2xl sm:text-3xl text-[var(--text-primary)] mt-1">
-                Social Media & Kanäle
+                Social Media 
               </h2>
             </div>
 
@@ -210,13 +203,12 @@ export default function ContactSection({ profile }) {
                         <span className="font-semibold text-sm text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
                           {social.name}
                         </span>
-                        <span className="font-telemetry text-xs text-[var(--accent-primary)]">
-                          {social.handle}
-                        </span>
+                        {social.handle && (
+                          <span className="font-telemetry text-xs text-[var(--accent-primary)]">
+                            {social.handle}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                        {social.description}
-                      </p>
                     </div>
                   </div>
                   <ExternalLink className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] shrink-0" />
@@ -260,7 +252,6 @@ export default function ContactSection({ profile }) {
                     onChange={(e) =>
                       setFormState({ ...formState, name: e.target.value })
                     }
-                    placeholder="Vor- und Nachname"
                     className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                   />
                 </div>
@@ -276,7 +267,6 @@ export default function ContactSection({ profile }) {
                     onChange={(e) =>
                       setFormState({ ...formState, email: e.target.value })
                     }
-                    placeholder="name@beispiel.de"
                     className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                   />
                 </div>
@@ -293,10 +283,10 @@ export default function ContactSection({ profile }) {
                   }
                   className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 >
-                  <option value="Kunstdruck-Anfrage">Anfrage zu einem Fine-Art-Kunstdruck</option>
+                  <option value="Allgemeine Nachricht">Allgemeine Nachricht / Feedback</option>
+                  <option value="Anfrage zu einer Fotografie">Anfrage zu einer Fotografie</option>
                   <option value="Ausstellung & Kooperation">Ausstellung & Kooperation</option>
                   <option value="Bildlizenz">Bildlizenz & Veröffentlichung</option>
-                  <option value="Allgemeine Nachricht">Allgemeine Nachricht / Feedback</option>
                 </select>
               </div>
 
@@ -311,7 +301,6 @@ export default function ContactSection({ profile }) {
                   onChange={(e) =>
                     setFormState({ ...formState, message: e.target.value })
                   }
-                  placeholder="Wie kann ich dir weiterhelfen?"
                   className="w-full px-4 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>

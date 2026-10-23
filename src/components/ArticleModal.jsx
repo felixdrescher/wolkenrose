@@ -5,7 +5,6 @@ import {
   Calendar,
   Tag,
   Camera,
-  Quote,
   Maximize2
 } from 'lucide-react';
 
@@ -45,7 +44,6 @@ export default function ArticleModal({
           title: block.caption || post.title,
           category: post.category || 'Blogbeitrag',
           location: block.location || post.location || '',
-          coordinates: block.coordinates || '',
           dateTaken: block.dateTaken || post.publishedAt || '',
           imageUrl: block.imageUrl,
           story: block.exifNote
@@ -67,7 +65,6 @@ export default function ArticleModal({
       title: caption || post.title,
       category: post.category || 'Blogbeitrag',
       location: block?.location || post.location || '',
-      coordinates: block?.coordinates || '',
       dateTaken: block?.dateTaken || post.publishedAt || '',
       imageUrl,
       story: exifNote ? `Aufnahmedaten: ${exifNote}` : caption || '',
@@ -186,7 +183,7 @@ export default function ArticleModal({
                     {profile?.name || 'Petra Schemmel'} · Wolkenrose - Fotografie
                   </span>
                   <span className="block text-[11px] font-telemetry text-[var(--text-secondary)]">
-                    Fotografisches Essay
+                    Blog
                   </span>
                 </div>
               </div>
@@ -204,26 +201,6 @@ export default function ArticleModal({
                   >
                     {block.content}
                   </h2>
-                );
-              }
-
-              if (block.type === 'quote') {
-                return (
-                  <blockquote
-                    key={block.id || index}
-                    style={{ borderLeftColor: 'var(--accent-primary)' }}
-                    className="my-8 p-6 sm:p-8 rounded-2xl bg-[var(--bg-primary)] border-l-4 space-y-3 border border-[var(--border-color)]"
-                  >
-                    <Quote className="w-6 h-6 text-[var(--accent-primary)] opacity-70" />
-                    <p className="font-editorial italic text-xl sm:text-2xl text-[var(--text-primary)] leading-relaxed">
-                      „{block.content}“
-                    </p>
-                    {block.author && (
-                      <footer className="font-telemetry text-xs text-[var(--accent-primary)]">
-                        — {block.author}
-                      </footer>
-                    )}
-                  </blockquote>
                 );
               }
 

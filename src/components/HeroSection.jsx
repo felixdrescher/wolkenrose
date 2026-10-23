@@ -1,12 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   MapPin,
   Camera,
   ArrowUpRight,
   Maximize2,
-  BookOpen,
-  ChevronLeft,
-  ChevronRight
+  BookOpen
 } from 'lucide-react';
 
 function hasAnyExif(exif) {
@@ -35,11 +33,7 @@ export default function HeroSection({
   onSelectPost,
   onNavigate
 }) {
-  const featuredPhotos = photos.filter((p) => p.featured);
-  const heroPool = featuredPhotos.length > 0 ? featuredPhotos : photos.slice(0, 4);
-  const [heroIndex, setHeroIndex] = useState(0);
-
-  const activeHero = heroPool[heroIndex % Math.max(1, heroPool.length)] || photos[0];
+  const activeHero = photos.find((p) => p.featured) || photos[0];
 
   // 6 selected photos for the landing page ("01 / Ausgewählte Fotografien")
   const selectedLandingPhotos = useMemo(() => {
@@ -53,14 +47,6 @@ export default function HeroSection({
       (b.publishedAt || '').localeCompare(a.publishedAt || '')
     );
   }, [posts]);
-
-  const handlePrev = () => {
-    setHeroIndex((prev) => (prev - 1 + heroPool.length) % heroPool.length);
-  };
-
-  const handleNext = () => {
-    setHeroIndex((prev) => (prev + 1) % heroPool.length);
-  };
 
   const heroHasExif = hasAnyExif(activeHero?.exif);
 
@@ -125,25 +111,18 @@ export default function HeroSection({
                 </div>
               </div>
 
-              {/* Right Column: Live Camera EXIF Telemetry Card & Carousel Controls */}
+              {/* Right Column: Live Camera EXIF Telemetry Card */}
               <div className="lg:col-span-4">
-                {(heroHasExif || activeHero.coordinates || heroPool.length > 1) && (
+                {heroHasExif && (
                   <div className="bg-black/70 backdrop-blur-xl border border-white/15 rounded-2xl p-6 space-y-4 shadow-2xl text-white">
-                    {(heroHasExif || activeHero.coordinates) && (
-                      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <div className="flex items-center gap-2 text-[var(--accent-primary)]">
-                          <Camera className="w-4 h-4" />
-                          <span className="font-telemetry text-xs uppercase tracking-widest">
-                            Aufnahmedaten
-                          </span>
-                        </div>
-                        {activeHero.coordinates && (
-                          <span className="font-telemetry text-[11px] text-white/70">
-                            {activeHero.coordinates}
-                          </span>
-                        )}
+                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                      <div className="flex items-center gap-2 text-[var(--accent-primary)]">
+                        <Camera className="w-4 h-4" />
+                        <span className="font-telemetry text-xs uppercase tracking-widest">
+                          Aufnahmedaten
+                        </span>
                       </div>
-                    )}
+                    </div>
 
                     {(activeHero.exif?.camera || activeHero.exif?.lens) && (
                       <div className="grid grid-cols-2 gap-3 font-telemetry text-xs">
@@ -194,47 +173,6 @@ export default function HeroSection({
                           <span className="text-[var(--accent-primary)] font-medium">
                             {activeHero.exif?.iso || '—'}
                           </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Hero Carousel Switcher */}
-                    {heroPool.length > 1 && (
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="flex items-center gap-1.5">
-                          {heroPool.map((p, idx) => (
-                            <button
-                              key={p.id}
-                              onClick={() => setHeroIndex(idx)}
-                              style={
-                                idx === heroIndex
-                                  ? { backgroundColor: 'var(--accent-primary)' }
-                                  : undefined
-                              }
-                              className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                                idx === heroIndex
-                                  ? 'w-7'
-                                  : 'w-2 bg-white/25 hover:bg-white/50'
-                              }`}
-                              aria-label={`Werk ${idx + 1} anzeigen`}
-                            />
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={handlePrev}
-                            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors cursor-pointer"
-                            aria-label="Vorheriges Foto"
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={handleNext}
-                            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors cursor-pointer"
-                            aria-label="Nächstes Foto"
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
                     )}

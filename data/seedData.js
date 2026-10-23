@@ -14,6 +14,7 @@ export const initialData = {
     "Naturschutz"
   ],
   theme: {
+    activeThemeId: "theme-1",
     defaultMode: "dark",
     accentPrimary: "#D4A359",
     accentSecondary: "#7A9A82",
@@ -29,19 +30,102 @@ export const initialData = {
     fontSans: "Plus Jakarta Sans",
     fontMono: "JetBrains Mono"
   },
+  customThemes: [
+    {
+      id: "theme-1",
+      name: "Waldgrün & Ockergold (Standard)",
+      description: "Dunkelgrün-schwarzer Hintergrund mit warmen Ockergold- und Salbei-Akzenten · Cormorant Garamond & Plus Jakarta Sans",
+      theme: {
+        defaultMode: "dark",
+        accentPrimary: "#D4A359",
+        accentSecondary: "#7A9A82",
+        darkBgPrimary: "#0B0E0C",
+        darkBgSecondary: "#121614",
+        darkTextPrimary: "#F4F1EA",
+        darkTextSecondary: "#9CA39E",
+        lightBgPrimary: "#F6F3EC",
+        lightBgSecondary: "#FFFFFF",
+        lightTextPrimary: "#181D1A",
+        lightTextSecondary: "#5A655E",
+        fontSerif: "Cormorant Garamond",
+        fontSans: "Plus Jakarta Sans",
+        fontMono: "JetBrains Mono"
+      }
+    },
+    {
+      id: "theme-2",
+      name: "Nordischer Schiefer & Stahlblau",
+      description: "Kühles Schiefergrau mit gedämpftem Stahlblau und serifenlosen Überschriften · Outfit & Inter",
+      theme: {
+        defaultMode: "dark",
+        accentPrimary: "#6495B8",
+        accentSecondary: "#7A939E",
+        darkBgPrimary: "#0D1117",
+        darkBgSecondary: "#151B23",
+        darkTextPrimary: "#ECF0F5",
+        darkTextSecondary: "#8B98A9",
+        lightBgPrimary: "#F3F5F8",
+        lightBgSecondary: "#FFFFFF",
+        lightTextPrimary: "#141A21",
+        lightTextSecondary: "#526071",
+        fontSerif: "Outfit",
+        fontSans: "Inter",
+        fontMono: "IBM Plex Mono"
+      }
+    },
+    {
+      id: "theme-3",
+      name: "Sandstein, Terrakotta & Oliv (Hell)",
+      description: "Warmes Museumspapier im Hellmodus mit erdigen Terrakotta- und Olivtönen · Libre Baskerville & Source Sans 3",
+      theme: {
+        defaultMode: "light",
+        accentPrimary: "#B86B43",
+        accentSecondary: "#5A6E53",
+        darkBgPrimary: "#141210",
+        darkBgSecondary: "#1E1B18",
+        darkTextPrimary: "#F2ECE4",
+        darkTextSecondary: "#A39B90",
+        lightBgPrimary: "#F4EFE6",
+        lightBgSecondary: "#FAF7F2",
+        lightTextPrimary: "#1C1917",
+        lightTextSecondary: "#5C554E",
+        fontSerif: "Libre Baskerville",
+        fontSans: "Source Sans 3",
+        fontMono: "Space Mono"
+      }
+    },
+    {
+      id: "theme-4",
+      name: "Monochrom Galerie (Schwarz & Silber)",
+      description: "Neutrales Dunkelkammer-Schwarz und mattes Silbergrau für unverfälschte Farbwirkung der Fotos · Space Grotesk & DM Sans",
+      theme: {
+        defaultMode: "dark",
+        accentPrimary: "#B0B8C0",
+        accentSecondary: "#7D858C",
+        darkBgPrimary: "#0A0A0B",
+        darkBgSecondary: "#141416",
+        darkTextPrimary: "#F2F2F3",
+        darkTextSecondary: "#96969C",
+        lightBgPrimary: "#F5F5F6",
+        lightBgSecondary: "#FFFFFF",
+        lightTextPrimary: "#121214",
+        lightTextSecondary: "#5A5A62",
+        fontSerif: "Space Grotesk",
+        fontSans: "DM Sans",
+        fontMono: "Roboto Mono"
+      }
+    }
+  ],
   profile: {
     brand: "Wolkenrose - Fotografie",
     name: "Petra Schemmel",
     tagline: "Poetische Natur-, Wolken- & Landschaftsfotografie",
     bio: "Unter dem Namen ‚Wolkenrose‘ widme ich mich den stillen Momenten der Natur: dramatischen Wolkenformationen über alpinen Gipfeln, nebelverhangenen Urwäldern, goldenen Morgenstunden im Moor und der unberührten Wildnis des Nordens. Jede Aufnahme ist eine Einladung zum Innehalten.",
-    location: "Voralpenland & Unterwegs · 47.7267° N, 11.8606° O",
+    location: "Voralpenland & Unterwegs",
     portraitImage: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=85",
     equipmentTitle: "Kameraausrüstung & Objektive",
     equipmentIntro: "Meine Ausrüstung ist auf feinste Tonwertabstufungen, hohe Detailauflösung und extreme Witterungsbedingungen in den Bergen und im hohen Norden ausgelegt.",
-    printsSubtitle: "Fine-Art-Editionen & Manufaktur",
-    printsTitle: "Handsignierte Kunstdrucke aus dem Atelier Wolkenrose",
-    printsText: "Alle Werke der Galerie sind als handsignierte, limitierte Fine-Art-Pigmentdrucke auf 315g Hahnemühle Photo Rag Baryta Büttenpapier erhältlich. Ein Teil jedes Verkaufs fließt in den Schutz heimischer Moore und alter Waldbestände.",
-    contactIntro: "Du interessierst dich für einen handsignierten Fine-Art-Kunstdruck, eine Ausstellung oder möchtest dich über Naturfotografie austauschen? Ich freue mich über deine Nachricht oder deinen Besuch auf meinen Social-Media-Kanälen.",
+    contactIntro: "Du hast Fragen zu meinen Fotografien, einer Ausstellung oder möchtest dich über Naturfotografie austauschen? Ich freue mich über deine Nachricht oder deinen Besuch auf meinen Social-Media-Kanälen.",
     email: "atelier@wolkenrose-fotografie.de",
     phone: "+49 (0) 8022 / 948 210",
     instagram: "@wolkenrose.petraschemmel",
@@ -50,10 +134,7 @@ export const initialData = {
       instagramHandle: "@wolkenrose.petraschemmel",
       blueskyUrl: "https://bsky.app/profile/wolkenrose.bsky.social",
       blueskyHandle: "@wolkenrose.bsky.social",
-      youtubeUrl: "",
-      youtubeHandle: "",
-      pinterestUrl: "",
-      pinterestHandle: ""
+      custom: []
     },
     equipment: [
       "Hasselblad X2D 100C Mittelformat",
@@ -75,7 +156,6 @@ export const initialData = {
       title: "Morgenstille am Vestrahorn",
       category: "Alpen & Gletscher",
       location: "Stokksnes-Halbinsel, Island",
-      coordinates: "64.2442° N, 14.9642° W",
       dateTaken: "2026-02-14",
       featured: true,
       landingSelected: true,
@@ -96,9 +176,8 @@ export const initialData = {
       title: "Kathedrale des alten Waldes",
       category: "Wälder & Moore",
       location: "Bayerischer Wald, Deutschland",
-      coordinates: "48.9667° N, 13.3944° O",
       dateTaken: "2026-01-22",
-      featured: true,
+      featured: false,
       landingSelected: true,
       aspectRatio: "portrait",
       imageUrl: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1400&q=85",
@@ -117,9 +196,8 @@ export const initialData = {
       title: "Smaragdlicht über den Fjorden",
       category: "Nachthimmel & Polarlicht",
       location: "Reinebringen, Lofoten, Norwegen",
-      coordinates: "67.9309° N, 13.0836° O",
       dateTaken: "2026-03-03",
-      featured: true,
+      featured: false,
       landingSelected: true,
       aspectRatio: "landscape",
       imageUrl: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1800&q=85",
@@ -138,7 +216,6 @@ export const initialData = {
       title: "Wächter der Wintertaiga",
       category: "Wildtiere",
       location: "Kuhmo Wildnis, Finnland",
-      coordinates: "64.1277° N, 29.5141° O",
       dateTaken: "2025-11-18",
       featured: false,
       landingSelected: true,
@@ -159,9 +236,8 @@ export const initialData = {
       title: "Wolkenrose am Hochgrat",
       category: "Wolken & Strukturen",
       location: "Allgäuer Hochalpen, Bayern",
-      coordinates: "47.4950° N, 10.0680° O",
       dateTaken: "2025-10-09",
-      featured: true,
+      featured: false,
       landingSelected: true,
       aspectRatio: "landscape",
       imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1800&q=85",
@@ -180,7 +256,6 @@ export const initialData = {
       title: "Basaltküste in der Winterdünung",
       category: "Küsten & Meere",
       location: "Reynisfjara Küste, Südisland",
-      coordinates: "63.4042° N, 19.0450° W",
       dateTaken: "2026-01-05",
       featured: false,
       landingSelected: true,
@@ -201,9 +276,8 @@ export const initialData = {
       title: "Alpenglühen über der Seceda",
       category: "Alpen & Gletscher",
       location: "Grödnertal, Südtirol",
-      coordinates: "46.6011° N, 11.7258° O",
       dateTaken: "2025-09-24",
-      featured: true,
+      featured: false,
       landingSelected: false,
       aspectRatio: "landscape",
       imageUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1800&q=85",
@@ -222,7 +296,6 @@ export const initialData = {
       title: "Nebelschleier am Bergsee",
       category: "Wälder & Moore",
       location: "Berchtesgadener Land, Deutschland",
-      coordinates: "47.5517° N, 12.9780° O",
       dateTaken: "2025-08-19",
       featured: false,
       landingSelected: false,
@@ -255,12 +328,6 @@ export const initialData = {
           id: "b1",
           type: "paragraph",
           content: "Das Hochgebirge besitzt im Spätwinter einen ganz eigenen Klang. Noch bevor das erste kühle Blau der Morgendämmerung den Horizont berührt, hört man nur das leise Knirschen des Firnschnees unter den Steigeisen und den Wind, der über die Grate streicht. Jeder Atemzug gefriert in der klaren Höhenluft."
-        },
-        {
-          id: "b2",
-          type: "quote",
-          content: "Wer Wolken und Licht fotografiert, fotografiert die Vergänglichkeit selbst – kein einziger Himmel wiederholt sich jemals auf dieselbe Weise.",
-          author: "Petra Schemmel — Tagebuchnotiz #14, Wolkenrose"
         },
         {
           id: "b3",
@@ -330,12 +397,6 @@ export const initialData = {
           imageUrl: "https://images.unsplash.com/photo-1474511320723-9a56873867b5?auto=format&fit=crop&w=1600&q=85",
           caption: "Ein Rotfuchs hält in der blauen Stunde im Pulverschnee inne – völlig ungestört.",
           exifNote: "Sony Alpha 1 · 400mm f/2.8 GM · f/2.8 · 1/1600s · ISO 640"
-        },
-        {
-          id: "b205",
-          type: "quote",
-          content: "Geduld in der Naturfotografie ist kein passives Warten – sie ist ein waches Lauschen auf den Rhythmus des Waldes.",
-          author: "Petra Schemmel"
         }
       ]
     },
